@@ -11,7 +11,7 @@ RTL_CORE := $(ROOT)/rtl/core
 TB_CORE := $(ROOT)/tb/core
 
 PKGS := $(RTL_CORE)/lx32_pkg.sv $(RTL_CORE)/branches_pkg.sv
-RTL_SRCS := $(PKGS) $(wildcard $(RTL_CORE)/*.sv)
+RTL_SRCS := $(PKGS) $(filter-out $(PKGS),$(wildcard $(RTL_CORE)/*.sv))
 TB_SRCS := $(wildcard $(TB_CORE)/*_tb.sv)
 TB_NAMES := $(notdir $(TB_SRCS))
 TB_TARGETS := $(TB_NAMES:.sv=)
