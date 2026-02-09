@@ -1,7 +1,9 @@
 `timescale 1ns / 1ps
-import lx32_pkg::*;
-import branches_pkg::*;
+
 module alu_tb;
+
+  import lx32_pkg::*;
+  import branches_pkg::*;
 
   localparam WIDTH = 32;
   logic       [WIDTH-1:0] src_a;
@@ -34,7 +36,7 @@ module alu_tb;
   endtask
 
   initial begin
-    is_branch = 1'b1;
+    is_branch = 1'b0;
 
     src_a = 32'h0000_000A;
     src_b = 32'h0000_0005;
@@ -55,16 +57,21 @@ module alu_tb;
 
     src_a = 32'hF000_0000;
     src_b = 32'hF000_0000;
+    is_branch = 1'b1;
     branch_op = BR_EQ;
     check(32'h0000_0000, 1'b1);
 
     src_a = 32'hFFFF_FFFF;
     src_b = 32'h0000_0001;
+    alu_control = ALU_SLT;
     branch_op = BR_LT;
     check(32'h0000_0001, 1'b1);
 
+    alu_control = ALU_SLTU;
     branch_op = BR_GEU;
     check(32'h0000_0000, 1'b1);
+
+    is_branch = 1'b0;
 
     src_a = 32'h8000_0000;
     src_b = 32'h0000_0001;
