@@ -6,8 +6,8 @@ module imm_gen (
 
   import lx32_arch_pkg::*;
 
-  always_comb begin
-    unique case (instr[6:0])
+  always @* begin
+    case (instr[6:0])
       OP_IMM, OP_LOAD, OP_JALR: imm = get_i_imm(instr);
       OP_STORE:                 imm = get_s_imm(instr);
       OP_BRANCH:                imm = get_b_imm(instr);
