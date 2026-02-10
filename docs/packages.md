@@ -11,6 +11,16 @@ Defines ALU operation encoding in `alu_op_e`:
 Defines branch comparison encoding in `branch_op_e`:
 - `BR_EQ`, `BR_NE`, `BR_LT`, `BR_GE`, `BR_LTU`, `BR_GEU`.
 
+## lx32_arch_pkg
+Defines opcode constants and immediate extraction helpers used by the core:
+- **Opcodes**: `OP_IMM`, `OP_LUI`, `OP_AUIPC`, `OP_STORE`, `OP_LOAD`, `OP_JAL`, `OP_JALR`, `OP_BRANCH`.
+- **Immediate helpers**: `get_i_imm`, `get_s_imm`, `get_b_imm`, `get_u_imm`, `get_j_imm`.
+
+## lx32_arch_pkg
+Defines opcode constants and immediate extraction helpers:
+- Opcodes: `OP_IMM`, `OP_LUI`, `OP_AUIPC`, `OP_STORE`, `OP_LOAD`, `OP_JAL`, `OP_JALR`, `OP_BRANCH`.
+- Immediate helpers: `get_i_imm`, `get_s_imm`, `get_b_imm`, `get_u_imm`, `get_j_imm`.
+
 ## Design Notes
 - Each package is self-contained and imported where needed.
 - Keeping enums in packages avoids duplicated definitions and keeps testbenches aligned with RTL.
