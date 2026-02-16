@@ -1,6 +1,6 @@
 package lx32_pkg;
 
-    typedef enum logic [3:0] {
+  typedef enum logic [3:0] {
     ALU_ADD,   // A + B
     ALU_SUB,   // A - B
     ALU_SLL,   // A << B
@@ -11,7 +11,7 @@ package lx32_pkg;
     ALU_SRA,   // A >>> B (arithmetic)
     ALU_OR,    // A | B
     ALU_AND    // A & B
-    } alu_op_e;
+  } alu_op_e;
 
 endpackage
 

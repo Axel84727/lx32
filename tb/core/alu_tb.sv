@@ -6,6 +6,8 @@ module alu_tb;
   import branches_pkg::*;
 
   localparam WIDTH = 32;
+
+  // --- Signals ---
   logic       [WIDTH-1:0] src_a;
   logic       [WIDTH-1:0] src_b;
   alu_op_e                alu_control;
@@ -15,6 +17,14 @@ module alu_tb;
   logic       [WIDTH-1:0] alu_result;
   logic                   alu_branch_true;
 
+  // --- File I/O Variables ---
+  int fd, count;
+  logic [WIDTH-1:0] f_a, f_b, f_res;
+  logic [3:0] f_op;
+  logic f_is_branch, f_br_true;
+  logic [2:0] f_br_op;
+
+  // --- DUT Instantiation ---
   alu #(WIDTH) dut (
       .src_a          (src_a),
       .src_b          (src_b),
@@ -25,62 +35,54 @@ module alu_tb;
       .alu_branch_true(alu_branch_true)
   );
 
+  // --- Verification Task ---
   task check(input logic [WIDTH-1:0] exp_res, input logic exp_br);
-    #1;
+    #1;  // Wait for combinational logic to settle
     if (alu_result !== exp_res || alu_branch_true !== exp_br) begin
-      $display("ERR | A:%h B:%h Ctrl:%s Br:%s | Res:%h (Exp:%h) Br:%b (Exp:%b)", src_a, src_b,
+      $display("ERR | A:%h B:%h Op:%s Br:%s | Res:%h (Exp:%h) Flag:%b (Exp:%b)", src_a, src_b,
                alu_control.name(), branch_op.name(), alu_result, exp_res, alu_branch_true, exp_br);
-    end else begin
-      $display("OK  | %s %s", alu_control.name(), branch_op.name());
     end
   endtask
 
+  // --- Test Logic ---
   initial begin
-    is_branch = 1'b0;
+    count = 0;
 
-    src_a = 32'h0000_000A;
-    src_b = 32'h0000_0005;
-    alu_control = ALU_ADD;
-    branch_op = BR_EQ;
-    check(32'h0000_000F, 1'b0);
+    // Open file (relative to project root)
+    fd = $fopen("tools/alu_tester/alu_vectors.tv", "r");
 
-    alu_control = ALU_SUB;
-    check(32'h0000_0005, 1'b0);
+    if (fd == 0) begin
+      $display("FATAL: Could not open alu_vectors.tv. Check path.");
+      $finish;
+    end
 
-    src_a = 32'hFFFF_FFFF;
-    src_b = 32'h0000_0001;
-    alu_control = ALU_SLT;
-    check(32'h0000_0001, 1'b0);
+    $display(">>> Starting Automated Verification (ALU + Branch) <<<");
 
-    alu_control = ALU_SLTU;
-    check(32'h0000_0000, 1'b0);
+    // Reading format: A B OP_ALU IS_BR OP_BR RES BR_TRUE
+    // We use %h for everything to keep it consistent with Rust's hex output
+    while ($fscanf(
+        fd, "%h %h %h %h %h %h %h\n", f_a, f_b, f_op, f_is_branch, f_br_op, f_res, f_br_true
+    ) == 7) begin
 
-    src_a = 32'hF000_0000;
-    src_b = 32'hF000_0000;
-    is_branch = 1'b1;
-    branch_op = BR_EQ;
-    check(32'h0000_0000, 1'b1);
+      count++;
 
-    src_a = 32'hFFFF_FFFF;
-    src_b = 32'h0000_0001;
-    alu_control = ALU_SLT;
-    branch_op = BR_LT;
-    check(32'h0000_0001, 1'b1);
+      // Apply stimulus
+      src_a       = f_a;
+      src_b       = f_b;
+      alu_control = alu_op_e'(f_op);
+      is_branch   = f_is_branch;
+      branch_op   = branch_op_e'(f_br_op);
 
-    alu_control = ALU_SLTU;
-    branch_op = BR_GEU;
-    check(32'h0000_0000, 1'b1);
+      // Compare DUT output with Golden Model
+      check(f_res, f_br_true);
 
-    is_branch = 1'b0;
+      if (count % 100 == 0) begin
+        $display("Processed %0d vectors...", count);
+      end
+    end
 
-    src_a = 32'h8000_0000;
-    src_b = 32'h0000_0001;
-    alu_control = ALU_SRA;
-    check(32'hC000_0000, 1'b0);
-
-    alu_control = ALU_SRL;
-    check(32'h4000_0000, 1'b0);
-
+    $display(">>> Verification Finished. Total Vectors: %0d <<<", count);
+    $fclose(fd);
     $finish;
   end
 
