@@ -1,3 +1,13 @@
+# Simulation artifacts
+.sim/
 sim/
 *.vcd
 *.out
+*.vvp
+
+# Rust / Tools
+tools/**/target/
+tools/**/*.tv
+!tools/**/src/
+!tools/**/Cargo.toml
+!tools/**/Cargo.lock
