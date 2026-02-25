@@ -30,7 +30,19 @@ module lx32_system_tb;
       .d_rdata(d_rdata)
   );
 
+  // Generador de reloj
   always #5 clk = ~clk;
+
+  // --- EL MONITOR MÁGICO ---
+  // Detecta cuando la CPU escribe en la dirección de "consola" 0x7FC
+  always @(posedge clk) begin
+    if (d_we && d_addr == 32'h7FC) begin
+      $display("\n[CPU MONITOR] Valor detectado en 0x7FC:");
+      $display("  > Hex: 32'h%h", d_wdata);
+      $display("  > Dec: %0d", d_wdata);
+      $display("  > Time: %0t ps\n", $time);
+    end
+  end
 
   initial begin
     $dumpfile("lx32_system.vcd");
@@ -41,7 +53,9 @@ module lx32_system_tb;
     #22;
     rst = 0;
 
-    #1000;
+    // Aumentamos el tiempo para que le de tiempo a terminar el bucle
+    #10000;
+
     $display("Simulacion finalizada. Revisa el archivo VCD.");
     $finish;
   end
