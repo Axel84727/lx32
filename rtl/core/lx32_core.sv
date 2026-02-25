@@ -15,7 +15,7 @@ module lx32_core (
 
   logic [31:0] pc, next_pc;
   logic [31:0] rs1_data, rs2_data, imm_ext, alu_a, alu_b, alu_res, rd_data;
-  logic reg_write, alu_src, mem_write, branch_en, alu_branch_true;
+  logic reg_write, alu_src, mem_write, branch_en, branch_taken;
   logic    [1:0] result_src;
   alu_op_e       alu_control;
 
@@ -25,7 +25,7 @@ module lx32_core (
   end
 
   assign pc_out  = pc;
-  assign next_pc = (branch_en && alu_branch_true) ? (pc + imm_ext) : (pc + 4);
+  assign next_pc = (branch_en && branch_taken) ? (pc + imm_ext) : (pc + 4);
 
   control_unit ctrl (
       .opcode(instr[6:0]),
@@ -59,15 +59,20 @@ module lx32_core (
   assign alu_a = rs1_data;
   assign alu_b = alu_src ? imm_ext : rs2_data;
 
-  alu core_alu (
+    alu core_alu (
       .src_a(alu_a),
       .src_b(alu_b),
       .alu_control(alu_control),
+      .alu_result(alu_res)
+    );
+
+    branch_unit core_branch_unit (
+      .src_a(alu_a),
+      .src_b(alu_b),
       .is_branch(branch_en),
       .branch_op(branch_op_e'(instr[14:12])),
-      .alu_result(alu_res),
-      .alu_branch_true(alu_branch_true)
-  );
+      .branch_taken(branch_taken)
+    );
 
   lsu core_lsu (
       .alu_result(alu_res),
