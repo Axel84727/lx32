@@ -4,10 +4,7 @@ module alu #(
   input logic [WIDTH-1:0] src_a,
   input logic [WIDTH-1:0] src_b,
   input lx32_pkg::alu_op_e alu_control,
-  input logic is_branch,
-  input branches_pkg::branch_op_e branch_op,
-  output logic [WIDTH-1:0] alu_result,
-  output logic alu_branch_true
+  output logic [WIDTH-1:0] alu_result
 );
 
   import lx32_pkg::*;
@@ -15,8 +12,6 @@ module alu #(
 
   always_comb begin
     alu_result = '0;
-    alu_branch_true = 1'b0;
-
     unique case (alu_control)
       ALU_ADD:  alu_result = src_a + src_b;
       ALU_SUB:  alu_result = src_a - src_b;
@@ -30,16 +25,5 @@ module alu #(
       ALU_AND:  alu_result = src_a & src_b;
       default:  alu_result = {WIDTH{1'b0}};
     endcase
-    if (is_branch) begin
-      unique case (branch_op)
-        BR_EQ:   alu_branch_true = (src_a == src_b);
-        BR_NE:   alu_branch_true = (src_a != src_b);
-        BR_LT:   alu_branch_true = ($signed(src_a) < $signed(src_b));
-        BR_GE:   alu_branch_true = ($signed(src_a) >= $signed(src_b));
-        BR_LTU:  alu_branch_true = (src_a < src_b);
-        BR_GEU:  alu_branch_true = (src_a >= src_b);
-        default: alu_branch_true = 1'b0;
-      endcase
-    end
   end
 endmodule

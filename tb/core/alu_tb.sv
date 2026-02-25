@@ -15,7 +15,7 @@ module alu_tb;
   logic                   is_branch;
 
   logic       [WIDTH-1:0] alu_result;
-  logic                   alu_branch_true;
+  logic                   branch_taken;
 
   // --- File I/O Variables ---
   int fd, count;
@@ -25,22 +25,27 @@ module alu_tb;
   logic [2:0] f_br_op;
 
   // --- DUT Instantiation ---
-  alu #(WIDTH) dut (
+    alu #(WIDTH) dut (
       .src_a          (src_a),
       .src_b          (src_b),
       .alu_control    (alu_control),
-      .is_branch      (is_branch),
-      .branch_op      (branch_op),
-      .alu_result     (alu_result),
-      .alu_branch_true(alu_branch_true)
-  );
+      .alu_result     (alu_result)
+    );
+
+    branch_unit #(WIDTH) dut_branch (
+      .src_a      (src_a),
+      .src_b      (src_b),
+      .is_branch  (is_branch),
+      .branch_op  (branch_op),
+      .branch_taken(branch_taken)
+    );
 
   // --- Verification Task ---
   task check(input logic [WIDTH-1:0] exp_res, input logic exp_br);
     #1;  // Wait for combinational logic to settle
-    if (alu_result !== exp_res || alu_branch_true !== exp_br) begin
+    if (alu_result !== exp_res || branch_taken !== exp_br) begin
       $display("ERR | A:%h B:%h Op:%s Br:%s | Res:%h (Exp:%h) Flag:%b (Exp:%b)", src_a, src_b,
-               alu_control.name(), branch_op.name(), alu_result, exp_res, alu_branch_true, exp_br);
+               alu_control.name(), branch_op.name(), alu_result, exp_res, branch_taken, exp_br);
     end
   endtask
 
