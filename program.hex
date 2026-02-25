@@ -1,4 +1,4 @@
-00500093
-00a00113
-002081b3
-fe000ce3
+02a00513  // addi x10, x0, 42      (Cargar 42 en x10)
+7fc00593  // addi x11, x0, 2044    (Cargar dirección 0x7FC en x11)
+00a5a023  // sw   x10, 0(x11)      (Guardar x10 en la dirección de x11)
+0000006f  // jal  x0, 0            (Bucle infinito para terminar)
