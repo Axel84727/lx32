@@ -10,17 +10,19 @@ module alu #(
   import lx32_pkg::*;
   import branches_pkg::*;
 
+  logic [4:0] shamt;
+  assign shamt = src_b[4:0];
   always_comb begin
     alu_result = '0;
-    unique case (alu_control)
+    case (alu_control)
       ALU_ADD:  alu_result = src_a + src_b;
       ALU_SUB:  alu_result = src_a - src_b;
-      ALU_SLL:  alu_result = src_a << src_b[4:0];
+      ALU_SLL:  alu_result = src_a << shamt;
       ALU_SLT:  alu_result = ($signed(src_a) < $signed(src_b));
       ALU_SLTU: alu_result = (src_a < src_b);
       ALU_XOR:  alu_result = src_a ^ src_b;
-      ALU_SRL:  alu_result = src_a >> src_b[4:0];
-      ALU_SRA:  alu_result = ($signed(src_a) >>> src_b[4:0]);
+      ALU_SRL:  alu_result = src_a >> shamt;
+      ALU_SRA:  alu_result = ($signed(src_a) >>> shamt);
       ALU_OR:   alu_result = src_a | src_b;
       ALU_AND:  alu_result = src_a & src_b;
       default:  alu_result = {WIDTH{1'b0}};

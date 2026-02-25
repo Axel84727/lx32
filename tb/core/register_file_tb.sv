@@ -53,7 +53,7 @@ module register_file_tb;
   end
 
   initial begin
-    $dumpfile("sim/register_file.vcd");
+    $dumpfile(".sim/register_file.vcd");
     $dumpvars(0, register_file_tb);
   end
 endmodule

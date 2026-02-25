@@ -16,7 +16,7 @@ module control_unit (
   logic [1:0] alu_op_main;
 
   always_comb begin
-    unique case (opcode)
+    case (opcode)
       OP_LOAD: {reg_write, alu_src, mem_write, result_src, branch, alu_op_main} = 8'b1_1_0_01_0_00;
       OP_STORE: {reg_write, alu_src, mem_write, result_src, branch, alu_op_main} = 8'b0_1_1_00_0_00;
       OP_R_TYPE:
@@ -29,11 +29,11 @@ module control_unit (
   end
 
   always_comb begin
-    unique case (alu_op_main)
+    case (alu_op_main)
       2'b00:   alu_control = ALU_ADD;
       2'b01:   alu_control = ALU_SUB;
       2'b10: begin
-        unique case (funct3)
+        case (funct3)
           3'b000: begin
             if (opcode == OP_R_TYPE && funct7_5) alu_control = ALU_SUB;
             else alu_control = ALU_ADD;

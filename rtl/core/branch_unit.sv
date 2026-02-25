@@ -12,7 +12,7 @@ module branch_unit #(
   always_comb begin
     branch_taken = 1'b0;
     if (is_branch) begin
-      unique case (branch_op)
+      case (branch_op)
         BR_EQ:   branch_taken = (src_a == src_b);
         BR_NE:   branch_taken = (src_a != src_b);
         BR_LT:   branch_taken = ($signed(src_a) < $signed(src_b));
