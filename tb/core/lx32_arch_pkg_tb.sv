@@ -4,7 +4,7 @@ module lx32_arch_pkg_tb;
   // This is a package, so we just check import and parameter presence
   import lx32_arch_pkg::*;
   initial begin
-    $display("lx32_arch_pkg_tb: Package imported, XLEN=%0d", XLEN);
+    $display("lx32_arch_pkg_tb: Package imported");
     $finish;
   end
 endmodule

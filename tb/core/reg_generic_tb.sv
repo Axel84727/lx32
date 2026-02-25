@@ -1,16 +1,16 @@
 `timescale 1ns / 1ps
 module reg_generic_tb;
-  localparam int TEST-WIDTH = 16;
+  localparam int TEST_WIDTH = 16;
 
   logic clk;
   logic rst;
   logic en;
-  logic [TEST-WIDTH - 1:0] data_in;
-  logic [TEST-WIDTH - 1:0] data_out;
+  logic [TEST_WIDTH - 1:0] data_in;
+  logic [TEST_WIDTH - 1:0] data_out;
 
-  reg_generic #(
-      .WIDTH(TEST-WIDTH)
-  ) dut (
+    reg_generic #(
+      .WIDTH(TEST_WIDTH)
+    ) dut (
       .clk(clk),
       .rst(rst),
       .en(en),
@@ -37,7 +37,7 @@ module reg_generic_tb;
   end
 
   initial begin
-    $dumpfile("sim/reg_generic.vcd");
+    $dumpfile(".sim/reg_generic.vcd");
     $dumpvars(0, reg_generic_tb);
   end
 endmodule

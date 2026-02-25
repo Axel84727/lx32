@@ -8,7 +8,7 @@ module lsu_tb;
   logic [WIDTH-1:0] mem_addr, mem_wdata;
   logic mem_we;
 
-  lsu #(WIDTH) dut (
+  lsu dut (
     .alu_result(alu_result),
     .write_data(write_data),
     .mem_write(mem_write),
@@ -23,14 +23,14 @@ module lsu_tb;
     write_data = 32'hDEADBEEF;
     mem_write = 1;
     #1;
-    assert(mem_addr == 32'h10) else $fatal("mem_addr mismatch");
-    assert(mem_wdata == 32'hDEADBEEF) else $fatal("mem_wdata mismatch");
-    assert(mem_we == 1) else $fatal("mem_we should be 1");
+    assert(mem_addr == 32'h10) else $fatal(1, "mem_addr mismatch");
+    assert(mem_wdata == 32'hDEADBEEF) else $fatal(1, "mem_wdata mismatch");
+    assert(mem_we == 1) else $fatal(1, "mem_we should be 1");
 
     // No write
     mem_write = 0;
     #1;
-    assert(mem_we == 0) else $fatal("mem_we should be 0");
+    assert(mem_we == 0) else $fatal(1, "mem_we should be 0");
 
     $display("lsu_tb: All tests passed");
     $finish;
