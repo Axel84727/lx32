@@ -1,7 +1,7 @@
-# lx32_core.sv
+# lx32_system.sv
 
 ## Description
-`lx32_core` is the main processor core, responsible for instruction sequencing, control flow, and connecting the main modules (ALU, registers, memory, etc).
+`lx32_system` is the main processor core, responsible for instruction sequencing, control flow, and connecting the main modules (ALU, registers, memory, etc).
 
 ## Ports
 - `clk` (input): System clock.

@@ -1,51 +1,38 @@
+# ============================================================
+# LX32 Makefile :: SystemVerilog Simulation (Verilator 5.044)
+# ============================================================
+
 SHELL := /bin/sh
+VERILATOR       ?= verilator
+VERILATOR_FLAGS ?= -Wall -Wno-fatal --binary --trace --trace-structs -O2 --timing
 
-IVL ?= iverilog
-VVP ?= vvp
-IVLFLAGS ?= -g2012
+OUTDIR          := .sim
 
-ROOT := $(CURDIR)
-OUTDIR ?= $(ROOT)/.sim
+# Relative paths
+RTL_CORE        := rtl/core
+RTL_ARCH        := rtl/arch
+TB_CORE         := tb/core
 
-RTL_CORE := $(ROOT)/rtl/core
-TB_CORE := $(ROOT)/tb/core
-
-PKGS := $(RTL_CORE)/lx32_pkg.sv $(RTL_CORE)/branches_pkg.sv $(RTL_CORE)/lx32_arch_pkg.sv
-RTL_SRCS := $(PKGS) $(filter-out $(PKGS),$(wildcard $(RTL_CORE)/*.sv))
-TB_SRCS := $(wildcard $(TB_CORE)/*_tb.sv)
-TB_NAMES := $(notdir $(TB_SRCS))
-TB_TARGETS := $(TB_NAMES:.sv=)
-
-.PHONY: help sim sim-all list-tb clean
+.PHONY: help sim clean
 
 help:
-	@echo "Targets:"
-	@echo "  sim TB=<name>      Compile and run a single testbench (e.g. TB=alu_tb)"
-	@echo "  sim-all            Compile and run all testbenches"
-	@echo "  list-tb            List available testbenches"
-	@echo "  clean              Remove build artifacts"
-	@echo "Vars: IVL, VVP, IVLFLAGS, OUTDIR"
-
-list-tb:
-	@for tb in $(TB_TARGETS); do echo $$tb; done
+	@echo "Usage: make sim TB=lx32_system_tb"
 
 sim:
-	@if [ -z "$(TB)" ]; then \
-		echo "ERROR: TB is required (e.g. make sim TB=alu_tb)"; \
-		exit 2; \
-	fi
-	@if [ ! -f "$(TB_CORE)/$(TB).sv" ]; then \
-		echo "ERROR: Testbench not found: $(TB_CORE)/$(TB).sv"; \
-		exit 2; \
-	fi
-	@mkdir -p "$(OUTDIR)"
-	$(IVL) $(IVLFLAGS) -s $(TB) -o "$(OUTDIR)/$(TB).vvp" $(RTL_SRCS) "$(TB_CORE)/$(TB).sv"
-	$(VVP) "$(OUTDIR)/$(TB).vvp"
-
-sim-all:
-	@for tb in $(TB_TARGETS); do \
-		$(MAKE) --no-print-directory sim TB=$$tb; \
-	done
+	@if [ -z "$(TB)" ]; then echo "ERROR: Define TB=<name>"; exit 2; fi
+	@mkdir -p "$(OUTDIR)/$(TB)"
+	@echo "Compiling System: $(TB)..."
+	
+	$(VERILATOR) $(VERILATOR_FLAGS) \
+		--top-module $(TB) \
+		--Mdir $(OUTDIR)/$(TB) \
+		$(RTL_ARCH)/*.sv \
+		$(RTL_CORE)/*.sv \
+		$(TB_CORE)/$(TB).sv \
+		-o $(TB)_sim
+	
+	@echo "Running simulation..."
+	./$(OUTDIR)/$(TB)/$(TB)_sim +trace
 
 clean:
-	@rm -rf "$(OUTDIR)"
+	@rm -rf $(OUTDIR)
