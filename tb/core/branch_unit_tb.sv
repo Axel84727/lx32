@@ -1,61 +1,109 @@
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
 module branch_unit_tb;
-  import branches_pkg::*;
-  localparam WIDTH = 32;
 
-  logic [WIDTH-1:0] src_a, src_b;
-  logic is_branch;
-  branch_op_e branch_op;
-  logic branch_taken;
+  // IMPORTANTE: Debe coincidir con el nombre del paquete en tu RTL
+  import lx32_branch_pkg::*;
 
-  branch_unit #(WIDTH) dut (
-    .src_a(src_a),
-    .src_b(src_b),
-    .is_branch(is_branch),
-    .branch_op(branch_op),
-    .branch_taken(branch_taken)
+  // ============================================================
+  // LX32 Testbench: Branch Evaluation Unit
+  // ============================================================
+  // - Deterministic stimulus
+  // - Structured checks
+  // - Assertion-based validation
+  // - Ready for VCD tracing
+  // ============================================================
+
+  localparam int WIDTH = 32;
+
+  // ------------------------------------------------------------
+  // DUT Signals
+  // ------------------------------------------------------------
+  logic [WIDTH-1:0] src_a;
+  logic [WIDTH-1:0] src_b;
+  logic             is_branch;
+  branch_op_e       branch_op;
+  logic             branch_taken;
+
+  // ------------------------------------------------------------
+  // DUT Instance
+  // ------------------------------------------------------------
+  branch_unit #(
+    .WIDTH(WIDTH)
+  ) dut (
+    .src_a        (src_a),
+    .src_b        (src_b),
+    .is_branch    (is_branch),
+    .branch_op    (branch_op),
+    .branch_taken (branch_taken)
   );
 
+  // ------------------------------------------------------------
+  // VCD Tracing
+  // ------------------------------------------------------------
   initial begin
-    // Simple test: branch disabled
-    src_a = 32'h1; src_b = 32'h1; is_branch = 0; branch_op = BR_EQ;
-    #1;
-    assert(branch_taken == 0) else $fatal(1, "Branch should not be taken when is_branch=0");
+    $dumpfile("tb_branch_unit.vcd");
+    $dumpvars(0, tb_branch_unit);
+  end
 
-    // Test EQ
-    src_a = 32'hA; src_b = 32'hA; is_branch = 1; branch_op = BR_EQ;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "EQ failed");
-    src_b = 32'hB;
-    #1;
-    assert(branch_taken == 0) else $fatal(1, "EQ false positive");
+  // ------------------------------------------------------------
+  // Utility Task: Apply and Check
+  // ------------------------------------------------------------
+  task automatic check_branch(
+    input logic [WIDTH-1:0] a,
+    input logic [WIDTH-1:0] b,
+    input logic             en,
+    input branch_op_e       op,
+    input logic             expected
+  );
+    begin
+      src_a     = a;
+      src_b     = b;
+      is_branch = en;
+      branch_op = op;
 
-    // Test NE
-    branch_op = BR_NE; src_b = 32'hA;
-    #1;
-    assert(branch_taken == 0) else $fatal(1, "NE false positive");
-    src_b = 32'hB;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "NE failed");
+      #1; // combinational settle
 
-    // Test LT/GE
-    branch_op = BR_LT; src_a = 32'h1; src_b = 32'h2;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "LT failed");
-    branch_op = BR_GE; src_a = 32'h2; src_b = 32'h1;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "GE failed");
+      assert (branch_taken === expected)
+        else $fatal(1,
+          "Branch check failed | op=%s a=%h b=%h expected=%b got=%b",
+          op.name(), a, b, expected, branch_taken);
+    end
+  endtask
 
-    // Test LTU/GEU
-    branch_op = BR_LTU; src_a = 32'h0; src_b = 32'hFFFFFFFF;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "LTU failed");
-    branch_op = BR_GEU; src_a = 32'hFFFFFFFF; src_b = 32'h0;
-    #1;
-    assert(branch_taken == 1) else $fatal(1, "GEU failed");
+  // ------------------------------------------------------------
+  // Test Sequence
+  // ------------------------------------------------------------
+  initial begin
+    $display(">>> Starting Branch Unit Tests <<<");
 
-    $display("branch_unit_tb: All tests passed");
+    // Gating check: Disabled branch (is_branch = 0)
+    // Even if A == B, branch_taken must be 0
+    check_branch(32'h1, 32'h1, 1'b0, BR_EQ, 1'b0);
+
+    // Equality (EQ / NE)
+    check_branch(32'hA, 32'hA, 1'b1, BR_EQ, 1'b1);
+    check_branch(32'hA, 32'hB, 1'b1, BR_EQ, 1'b0);
+    check_branch(32'hA, 32'hA, 1'b1, BR_NE, 1'b0);
+    check_branch(32'hA, 32'hB, 1'b1, BR_NE, 1'b1);
+
+    // Signed comparisons (LT / GE)
+    // 00000001 (1) < 00000002 (2) -> True
+    check_branch(32'h1, 32'h2, 1'b1, BR_LT, 1'b1);
+    // FFFFFFFF (-1) < 00000001 (1) -> True
+    check_branch(32'hFFFFFFFF, 32'h00000001, 1'b1, BR_LT, 1'b1);
+    check_branch(32'h2, 32'h1, 1'b1, BR_GE, 1'b1);
+
+    // Unsigned comparisons (LTU / GEU)
+    // 0 < FFFFFFFF (Max Unsigned) -> True
+    check_branch(32'h0, 32'hFFFFFFFF, 1'b1, BR_LTU, 1'b1);
+    // FFFFFFFF (Max) is NOT less than 0 unsigned -> False
+    check_branch(32'hFFFFFFFF, 32'h0, 1'b1, BR_LTU, 1'b0);
+    check_branch(32'hFFFFFFFF, 32'h0, 1'b1, BR_GEU, 1'b1);
+
+    $display("tb_branch_unit: All tests passed");
+    $dumpflush;
     $finish;
   end
+
 endmodule

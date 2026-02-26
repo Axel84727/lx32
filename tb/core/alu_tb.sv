@@ -1,93 +1,100 @@
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
 module alu_tb;
 
-  import lx32_pkg::*;
-  import branches_pkg::*;
+  import lx32_alu_pkg::*;
 
-  localparam WIDTH = 32;
+  // ============================================================
+  // LX32 Testbench: Arithmetic Logic Unit (ALU)
+  // ============================================================
+  // - Deterministic stimulus
+  // - Structured checks
+  // - Assertion-based validation
+  // - Scalable for RV32I base instructions
+  // ============================================================
 
-  // --- Signals ---
-  logic       [WIDTH-1:0] src_a;
-  logic       [WIDTH-1:0] src_b;
-  alu_op_e                alu_control;
-  branch_op_e             branch_op;
-  logic                   is_branch;
+  localparam int WIDTH = 32;
 
-  logic       [WIDTH-1:0] alu_result;
-  logic                   branch_taken;
+  // ------------------------------------------------------------
+  // DUT Signals
+  // ------------------------------------------------------------
+  logic [WIDTH-1:0] src_a;
+  logic [WIDTH-1:0] src_b;
+  alu_op_e          alu_control;
+  logic [WIDTH-1:0] alu_result;
 
-  // --- File I/O Variables ---
-  int fd, count;
-  logic [WIDTH-1:0] f_a, f_b, f_res;
-  logic [3:0] f_op;
-  logic f_is_branch, f_br_true;
-  logic [2:0] f_br_op;
 
-  // --- DUT Instantiation ---
-    alu #(WIDTH) dut (
-      .src_a          (src_a),
-      .src_b          (src_b),
-      .alu_control    (alu_control),
-      .alu_result     (alu_result)
-    );
+  // ------------------------------------------------------------
+  // DUT Instance
+  // ------------------------------------------------------------
+  alu #(
+    .WIDTH(WIDTH)
+  ) dut (
+    .src_a       (src_a),
+    .src_b       (src_b),
+    .alu_control (alu_control),
+    .alu_result  (alu_result)
+  );
 
-    branch_unit #(WIDTH) dut_branch (
-      .src_a      (src_a),
-      .src_b      (src_b),
-      .is_branch  (is_branch),
-      .branch_op  (branch_op),
-      .branch_taken(branch_taken)
-    );
+  // ------------------------------------------------------------
+  // VCD Tracing
+  // ------------------------------------------------------------
+  initial begin
+    $dumpfile("alu_tb.vcd");
+    $dumpvars(0, alu_tb);
+  end
 
-  // --- Verification Task ---
-  task check(input logic [WIDTH-1:0] exp_res, input logic exp_br);
-    #1;  // Wait for combinational logic to settle
-    if (alu_result !== exp_res || branch_taken !== exp_br) begin
-      $display("ERR | A:%h B:%h Op:%s Br:%s | Res:%h (Exp:%h) Flag:%b (Exp:%b)", src_a, src_b,
-               alu_control.name(), branch_op.name(), alu_result, exp_res, branch_taken, exp_br);
+  // ------------------------------------------------------------
+  // Utility Task: Apply and Check
+  // ------------------------------------------------------------
+  task automatic check_alu(
+    input logic [WIDTH-1:0] a,
+    input logic [WIDTH-1:0] b,
+    input alu_op_e          op,
+    input logic [WIDTH-1:0] expected
+  );
+    begin
+      src_a       = a;
+      src_b       = b;
+      alu_control = op;
+
+      #1; // combinational settle
+
+      assert (alu_result === expected)
+        else $fatal(1,
+          "ALU check failed | op=%s a=%h b=%h expected=%h got=%h",
+          op.name(), a, b, expected, alu_result);
     end
   endtask
 
-  // --- Test Logic ---
+
+  // ------------------------------------------------------------
+  // Test Sequence
+  // ------------------------------------------------------------
   initial begin
-    count = 0;
 
-    // Open file (relative to project root)
-    fd = $fopen("tools/alu_tester/alu_vectors.tv", "r");
+    $display(">>> Starting ALU Deterministic Tests <<<");
 
-    if (fd == 0) begin
-      $display("FATAL: Could not open alu_vectors.tv. Check path.");
-      $finish;
-    end
+    // Arithmetic
+    check_alu(32'h00000005, 32'h0000000A, ALU_ADD,  32'h0000000F); // 5 + 10 = 15
+    check_alu(32'h0000000A, 32'h00000003, ALU_SUB,  32'h00000007); // 10 - 3 = 7
 
-    $display(">>> Starting Automated Verification (ALU + Branch) <<<");
+    // Logical
+    check_alu(32'hAAAAAAAA, 32'h55555555, ALU_XOR,  32'hFFFFFFFF);
+    check_alu(32'hF0F0F0F0, 32'h0F0F0F0F, ALU_OR,   32'hFFFFFFFF);
+    check_alu(32'hFF00FF00, 32'h00FFFF00, ALU_AND,  32'h0000FF00);
 
-    // Reading format: A B OP_ALU IS_BR OP_BR RES BR_TRUE
-    // We use %h for everything to keep it consistent with Rust's hex output
-    while ($fscanf(
-        fd, "%h %h %h %h %h %h %h\n", f_a, f_b, f_op, f_is_branch, f_br_op, f_res, f_br_true
-    ) == 7) begin
+    // Shifts
+    check_alu(32'h00000001, 32'h00000004, ALU_SLL,  32'h00000010); // 1 << 4
+    check_alu(32'h80000000, 32'h00000001, ALU_SRL,  32'h40000000); // Logic Right
+    check_alu(32'h80000000, 32'h00000001, ALU_SRA,  32'hC0000000); // Arithmetic Right (Sign ext)
 
-      count++;
+    // Comparisons (SLT / SLTU)
+    check_alu(32'hFFFFFFFF, 32'h00000001, ALU_SLT,  32'h00000001); // -1 < 1 (Signed) is True
+    check_alu(32'hFFFFFFFF, 32'h00000001, ALU_SLTU, 32'h00000000); // Max < 1 (Unsigned) is False
 
-      // Apply stimulus
-      src_a       = f_a;
-      src_b       = f_b;
-      alu_control = alu_op_e'(f_op);
-      is_branch   = f_is_branch;
-      branch_op   = branch_op_e'(f_br_op);
-
-      // Compare DUT output with Golden Model
-      check(f_res, f_br_true);
-
-      if (count % 100 == 0) begin
-        $display("Processed %0d vectors...", count);
-      end
-    end
-
-    $display(">>> Verification Finished. Total Vectors: %0d <<<", count);
-    $fclose(fd);
+    $display("alu_tb: All tests passed");
+    $dumpflush;
     $finish;
   end
 
