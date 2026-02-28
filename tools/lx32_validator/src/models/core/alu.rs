@@ -11,7 +11,7 @@
 // ============================================================
 
 use crate::models::arch::lx32_alu_pkg::alu_op_e;
-use crate::models::arch::lx32_arch_pkg::XLEN;
+
 pub fn alu_golden_model(src_a: u32, src_b: u32, alu_control: alu_op_e) -> u32 {
     let shamt = src_b & 0x1F;
 

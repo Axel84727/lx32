@@ -11,8 +11,7 @@
 //   - Explicit safe default via 'default' case
 // ============================================================
 
-use crate::models::arch::lx32_imm_pkg::*;
-use crate::models::arch::lx32_isa_pkg::opcode_t;
+use crate::models::arch::lx32_decode_pkg::*;
 
 /// Replicates the opcode-driven mux logic to select and sign-extend
 /// the correct immediate format based on the instruction type.
