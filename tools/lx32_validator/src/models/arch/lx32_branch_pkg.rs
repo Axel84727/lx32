@@ -34,3 +34,16 @@ pub enum branch_op_e {
     BR_LTU = 4, // A <  B (unsigned)
     BR_GEU = 5, // A >= B (unsigned)
 }
+impl branch_op_e {
+    pub fn from_bits(bits: u8) -> Self {
+        match bits {
+            0b000 => Self::BR_EQ,
+            0b001 => Self::BR_NE,
+            0b100 => Self::BR_LT,
+            0b101 => Self::BR_GE,
+            0b110 => Self::BR_LTU,
+            0b111 => Self::BR_GEU,
+            _ => Self::BR_EQ, // Default to EQ or a safe state
+        }
+    }
+}

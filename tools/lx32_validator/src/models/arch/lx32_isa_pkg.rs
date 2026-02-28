@@ -44,3 +44,19 @@ pub enum opcode_t {
     // -------------------------
     OP_INVALID = 0b0000000,
 }
+impl opcode_t {
+    pub fn from_bits(bits: u8) -> Self {
+        match bits {
+            0b0110111 => Self::OP_LUI,
+            0b0010111 => Self::OP_AUIPC,
+            0b1101111 => Self::OP_JAL,
+            0b1100111 => Self::OP_JALR,
+            0b1100011 => Self::OP_BRANCH,
+            0b0000011 => Self::OP_LOAD,
+            0b0100011 => Self::OP_STORE,
+            0b0010011 => Self::OP_OP_IMM,
+            0b0110011 => Self::OP_OP,
+            _ => Self::OP_INVALID,
+        }
+    }
+}
