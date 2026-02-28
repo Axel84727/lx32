@@ -15,6 +15,25 @@ TB_CORE         := tb/core
 
 .PHONY: help sim clean
 
+
+VERILATOR_ROOT = /opt/homebrew/Cellar/verilator/5.044/share/verilator
+VERILATOR_INC  = $(VERILATOR_ROOT)/include
+VALIDATOR_DIR  = tools/lx32_validator
+
+librust:
+	# 1. Generate C++ files
+	verilator -Wall --cc \
+		--Mdir .sim/lx32_lib \
+		rtl/arch/*.sv \
+		rtl/core/*.sv \
+		--top-module lx32_system
+
+	# 2. Compile the bridge using the correct Homebrew paths
+	g++ -c -fPIC $(VALIDATOR_DIR)/src/bridge.cpp \
+		-I.sim/lx32_lib \
+		-I$(VERILATOR_INC) \
+		-I$(VERILATOR_INC)/vltstd \
+		-o .sim/bridge.o
 help:
 	@echo "Usage: make sim TB=lx32_system_tb"
 
@@ -22,7 +41,7 @@ sim:
 	@if [ -z "$(TB)" ]; then echo "ERROR: Define TB=<name>"; exit 2; fi
 	@mkdir -p "$(OUTDIR)/$(TB)"
 	@echo "Compiling System: $(TB)..."
-	
+
 	$(VERILATOR) $(VERILATOR_FLAGS) \
 		--top-module $(TB) \
 		--Mdir $(OUTDIR)/$(TB) \
@@ -30,7 +49,7 @@ sim:
 		$(RTL_CORE)/*.sv \
 		$(TB_CORE)/$(TB).sv \
 		-o $(TB)_sim
-	
+
 	@echo "Running simulation..."
 	./$(OUTDIR)/$(TB)/$(TB)_sim +trace
 

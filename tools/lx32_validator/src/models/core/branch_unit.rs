@@ -33,9 +33,6 @@ pub fn branch_unit_golden(src_a: u32, src_b: u32, is_branch: bool, branch_op: br
         // -------------------------
         branch_op_e::BR_LTU => src_a < src_b,
         branch_op_e::BR_GEU => src_a >= src_b,
-
-        // Default
-        _ => false,
     };
 
     // --- 2. Branch Enable Gating ---
