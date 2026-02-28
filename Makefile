@@ -34,5 +34,11 @@ sim:
 	@echo "Running simulation..."
 	./$(OUTDIR)/$(TB)/$(TB)_sim +trace
 
+lint:
+	@echo "Running Lint check for all RTL..."
+	$(VERILATOR) --lint-only -Wall -Wno-fatal \
+		$(RTL_ARCH)/*.sv \
+		$(RTL_CORE)/*.sv
+
 clean:
 	@rm -rf $(OUTDIR)
