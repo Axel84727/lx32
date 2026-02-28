@@ -35,8 +35,7 @@ sim:
 	./$(OUTDIR)/$(TB)/$(TB)_sim +trace
 
 lint:
-	@echo "Running Lint check for all RTL..."
-	$(VERILATOR) --lint-only -Wall -Wno-fatal \
+	$(VERILATOR) --lint-only -Wall -Wno-fatal --top-module lx32_system \
 		$(RTL_ARCH)/*.sv \
 		$(RTL_CORE)/*.sv
 
