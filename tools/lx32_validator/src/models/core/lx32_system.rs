@@ -103,7 +103,19 @@ impl Lx32System {
         };
         self.pc = next_pc;
 
-        // --- 7. Return LSU signals for validation ---
+        // --- 7. Result MUX (Write-back source) ---
+        // result_src: 00=ALU, 01=Mem, 10=PC+4
+        let write_data = match ctrl.result_src {
+            0b00 => alu_res,
+            0b01 => mem_rdata,
+            0b10 => self.pc,
+            _ => alu_res,
+        };
+
+        // --- 8. Register File Write-back ---
+        self.reg_file.tick(false, rd_addr, write_data, ctrl.reg_write);
+
+        // --- 9. Return LSU signals for validation ---
         // (Address, Data to write, Write Enable)
         (alu_res, rs2_data, ctrl.mem_write)
     }

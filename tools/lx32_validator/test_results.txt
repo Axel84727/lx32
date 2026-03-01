@@ -1,7 +1,23 @@
 ================================== LX32 FULL HARDWARE VALIDATION ===================================
 
-=================================== STARTING BRANCH UNIT FUZZER ====================================
-[    0] Instr: 0xffeacae3 | PC: 0x0000->[R:0x0004 G:0x0004] | x21:0x00000000 vs x30:0x00000000 | Taken: false | MATCH
-[    1] Instr: 0x02e29463 | PC: 0x0004->[R:0x0008 G:0x0008] | x 5:0x00000000 vs x14:0x00000000 | Taken: false | MATCH
-[    2] Instr: 0xffbb68e3 | PC: 0x0008->[R:0x000c G:0x000c] | x22:0x00000000 vs x27:0x00000000 | Taken: false | MATCH
-[    3] Instr: 0x0095fe63 | PC: 0x000c->[R:0x0010 G:0x0028] | x11:0x00000000 vs x 9:0x00000000 | Taken: false | !!! MISMATCH !!!
+=================================== STARTING CONTROL UNIT FUZZER ===================================
+Iterations: 500
+Registers: (0, 32)
+Immediates: (-2048, 2047)
+[    0] Instr: 0xd2a43a13 | PC: [R:0x0004 G:0x0004] | x20(RD): [R:0x00000001 G:0x00000000] | ✗ MISMATCH
+
+================================== CONTROL UNIT MISMATCH DETECTED ==================================
+Iteration: 0
+Instruction: 0xd2a43a13
+
+RTL State:
+  PC: 0x0004
+  x20 (RD): 0x00000001
+  x 8 (RS1): 0x00000000
+  x10 (RS2): 0x00000000
+
+Golden State:
+  PC: 0x0004
+  x20 (RD): 0x00000000
+  x 8 (RS1): 0x00000000
+  x10 (RS2): 0x00000000

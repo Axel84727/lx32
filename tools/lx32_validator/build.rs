@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use std::path::Path;
+
 
 fn main() {
     let verilator_root = env::var("VERILATOR_ROOT")
