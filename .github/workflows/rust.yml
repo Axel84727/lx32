@@ -1,4 +1,4 @@
-name: Rust Tests
+name: Rust Ultimate CI
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v4
 
-    - name: Debug pre-clean Verilator state
+    - name: Pre-clean Verilator state
       run: |
         echo "PATH: $PATH"
         which verilator || true
@@ -28,19 +28,19 @@ jobs:
         ls -lh /usr/share/verilator || true
         ls -lh /usr/local/share/verilator || true
 
-    - name: **Force complete cleanup of Verilator (no matter how it was installed)**
+    - name: Force complete cleanup of Verilator (no matter how it was installed)
       run: |
         sudo apt-get remove --purge -y verilator || true
         sudo rm -rf /usr/local/bin/verilator /usr/local/share/verilator
         sudo rm -rf /usr/bin/verilator /usr/share/verilator
         hash -r || true
 
-    - name: Install Verilator fresh from apt
+    - name: Install Verilator from apt
       run: |
         sudo apt-get update
         sudo apt-get install -y verilator
 
-    - name: Debug/verify post-install state
+    - name: Verify Verilator install
       run: |
         verilator --version
         which verilator
