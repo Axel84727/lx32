@@ -49,9 +49,10 @@ module branch_unit #(
 
       // -------------------------
       // Unsigned comparisons
+      // Use explicit unsigned casting to force proper evaluation
       // -------------------------
-      BR_LTU : compare_result = (src_a <  src_b);
-      BR_GEU : compare_result = (src_a >= src_b);
+      BR_LTU : compare_result = ($unsigned(src_a) <  $unsigned(src_b));
+      BR_GEU : compare_result = ($unsigned(src_a) >= $unsigned(src_b));
 
       default: compare_result = 1'b0;
 

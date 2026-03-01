@@ -20,9 +20,10 @@
 // ------------------------------------------------------------
 #![allow(non_camel_case_types)]
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum branch_op_e {
     // Equality
+    #[default]
     BR_EQ = 0, // A == B
     BR_NE = 1, // A != B
 

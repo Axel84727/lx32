@@ -38,11 +38,13 @@ pub fn get_s_imm(instr: instr_t) -> data_t {
 // B-Type Immediate
 // -------------------------
 pub fn get_b_imm(instr: instr_t) -> data_t {
-    let bit_12 = (instr >> 31) & 0x1; // instr[31]
-    let bit_11 = (instr >> 7) & 0x1; // instr[7]
-    let bits_10_5 = (instr >> 25) & 0x3F; // instr[30:25]
-    let bits_4_1 = (instr >> 8) & 0xF; // instr[11:8]
-    let imm_13b = (bit_12 << 12) | (bit_11 << 11) | (bits_10_5 << 5) | (bits_4_1 << 1) | 0; // bit 0 = 1'b0
+    let bit_12 = (instr >> 31) & 0x1; // instr[31] -> imm[12]
+    let bit_11 = (instr >> 7) & 0x1;  // instr[7]  -> imm[11]
+    let bits_10_5 = (instr >> 25) & 0x3F; // instr[30:25] -> imm[10:5]
+    let bits_4_1 = (instr >> 8) & 0xF;    // instr[11:8] -> imm[4:1]
+    // Assemble as [12|11|10:5|4:1|0] (bits_4_1 << 1 sets LSB to 0)
+    let imm_13b = (bit_12 << 12) | (bit_11 << 11) | (bits_10_5 << 5) | (bits_4_1 << 1);
+    // Sign-extend 13 bits (imm[12:0]) - no additional shift needed
     ((imm_13b << 19) as i32 >> 19) as u32
 }
 

@@ -10,7 +10,6 @@
 //   - Synchronous state updates matching RTL behavior.
 // ============================================================
 
-use crate::models::arch::lx32_branch_pkg::branch_op_e;
 use crate::models::arch::lx32_isa_pkg::opcode_t;
 use crate::models::core::alu::alu_golden_model;
 use crate::models::core::branch_unit::branch_unit_golden;
@@ -71,7 +70,6 @@ impl Lx32System {
         let opcode = opcode_t::from_bits((instr & 0x7F) as u8);
         let funct3 = ((instr >> 12) & 0x7) as u8;
         let funct7_5 = ((instr >> 30) & 0x1) != 0;
-        let branch_op = branch_op_e::from_bits(funct3);
 
         // Generating control signals and extending immediate
         let ctrl = control_unit_golden(opcode, funct3, funct7_5);
@@ -94,11 +92,11 @@ impl Lx32System {
 
         // BRANCH evaluation ALWAYS uses rs1_data and rs2_data directly
         // Do not use alu_a/alu_b here to avoid confusion
-        let branch_taken = branch_unit_golden(rs1_data, rs2_data, ctrl.branch, branch_op);
+        let branch_taken = branch_unit_golden(rs1_data, rs2_data, ctrl.branch, ctrl.branch_op);
 
         // --- 6. State Update ---
         let next_pc = if ctrl.branch && branch_taken {
-            // Ensure imm_ext here is correctly sign-extended and shifted in imm_gen_golden!
+            // Use wrapping addition to match RTL behavior (pc + imm_ext)
             self.pc.wrapping_add(imm_ext)
         } else {
             self.pc.wrapping_add(4)
