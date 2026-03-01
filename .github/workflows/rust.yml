@@ -10,27 +10,22 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test-all-modules:
+  run-tests:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        test:
-          - test_alu
-          - test_branch_unit
-          - test_control_unit
-          - test_imm_gen
-          - test_lsu
-          - test_memory_sim
-          - test_reg_generic
-          - test_register_file
-          - test_lx32_system
 
     steps:
     - uses: actions/checkout@v4
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+    
+    - name: Install Verilator
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y verilator
+    
+    - name: Build RTL Library
+      run: make librust
     
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
@@ -41,6 +36,6 @@ jobs:
       run: cargo build --release --verbose
       working-directory: tools/lx32_validator
     
-    - name: Run ${{ matrix.test }}
-      run: cargo test --test ${{ matrix.test }} --release --verbose
+    - name: Run Tests
+      run: cargo run --release --verbose
       working-directory: tools/lx32_validator
