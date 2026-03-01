@@ -7,6 +7,8 @@ VERILATOR       ?= verilator
 VERILATOR_FLAGS ?= -Wall -Wno-fatal --binary --trace --trace-structs -O2 --timing
 
 OUTDIR          := .sim
+ROOT_DIR        := $(CURDIR)
+LIB_OUTDIR      := $(abspath $(OUTDIR)/lx32_lib)
 
 # Relative paths
 RTL_CORE        := rtl/core
@@ -28,22 +30,25 @@ VERILATOR_INC  := $(VERILATOR_ROOT)/include
 VALIDATOR_DIR  := tools/lx32_validator
 
 librust:
-	@rm -rf .sim/lx32_lib
-	@mkdir -p .sim/lx32_lib
-	@test -w .sim/lx32_lib
+	@rm -rf "$(LIB_OUTDIR)"
+	@mkdir -p "$(LIB_OUTDIR)"
+	@chmod -R u+rwX "$(OUTDIR)"
+	@test -d "$(LIB_OUTDIR)"
+	@test -w "$(LIB_OUTDIR)"
 	# 1. Generate C++ files
 	$(VERILATOR) -Wall --cc \
-		--Mdir .sim/lx32_lib \
+		--Mdir $(LIB_OUTDIR) \
 		rtl/arch/*.sv \
 		rtl/core/*.sv \
 		--top-module lx32_system
 
 	# 2. Compile the bridge using the correct Homebrew paths
 	g++ -c -fPIC $(VALIDATOR_DIR)/src/bridge.cpp \
-		-I.sim/lx32_lib \
+		-I$(LIB_OUTDIR) \
 		-I$(VERILATOR_INC) \
 		-I$(VERILATOR_INC)/vltstd \
-		-o .sim/bridge.o
+		-o $(ROOT_DIR)/.sim/bridge.o
+
 help:
 	@echo "Usage: make sim TB=lx32_system_tb"
 
