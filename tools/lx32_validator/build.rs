@@ -1,7 +1,7 @@
 use std::env;
 use std::fs;
 
-
+//ci test
 fn main() {
     let verilator_root = env::var("VERILATOR_ROOT")
         .unwrap_or_else(|_| "/opt/homebrew/opt/verilator/share/verilator".to_string());
