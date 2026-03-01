@@ -24,8 +24,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y verilator
 
-    - name: Create .sim Directory
-      run: mkdir -p .sim
+    - name: Prepare Verilator Output Directory
+      run: |
+        rm -rf .sim/lx32_lib
+        mkdir -p .sim/lx32_lib
     
     - name: Build RTL Library
       run: make librust
