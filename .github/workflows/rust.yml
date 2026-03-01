@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  VERILATOR_ROOT: /usr/share/verilator
 
 jobs:
   run-tests:
@@ -24,18 +25,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y verilator
 
-    - name: Prepare Verilator Output Directory
-      run: |
-        rm -rf .sim/lx32_lib
-        mkdir -p .sim/lx32_lib
-    
-    - name: Build RTL Library
-      run: |
-        rm -rf .sim/lx32_lib
-        mkdir -p .sim/lx32_lib
-        chmod -R u+rwX .sim
-        make librust
-    
     - name: Verify Verilator Install
       run: which verilator && verilator --version
 
@@ -44,10 +33,10 @@ jobs:
       with:
         workspaces: tools/lx32_validator
     
-    - name: Build Validator
-      run: cargo build --release
-      working-directory: tools/lx32_validator
-    
-    - name: Run Tests
-      run: cargo run --release
+    - name: Generate RTL + Build + Run
+      run: |
+        make -C ../.. librust
+        test -d ../../.sim/lx32_lib
+        cargo build --release
+        cargo run --release
       working-directory: tools/lx32_validator
