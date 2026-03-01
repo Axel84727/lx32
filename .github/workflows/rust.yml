@@ -27,13 +27,21 @@ jobs:
     - name: Build RTL Library
       run: make librust
     
+    - name: Verify Verilator Install
+      run: which verilator && verilator --version
+
+    - name: Create .sim Directory
+      run: mkdir -p .sim
+
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
         workspaces: tools/lx32_validator
     
-    - name: Build
-      run: cargo build --release --verbose --manifest-path tools/lx32_validator/Cargo.toml
+    - name: Build Validator
+      run: cargo build --release
+      working-directory: tools/lx32_validator
     
     - name: Run Tests
-      run: cargo run --release --verbose --manifest-path tools/lx32_validator/Cargo.toml
+      run: cargo run --release
+      working-directory: tools/lx32_validator
