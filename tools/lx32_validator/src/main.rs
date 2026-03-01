@@ -8,6 +8,12 @@ mod test_branch_unit;
 #[path = "../tests/test_control_unit.rs"]
 mod test_control_unit;
 
+#[path = "../tests/test_lsu.rs"]
+mod test_lsu;
+
+#[path = "../tests/test_imm_gen.rs"]
+mod test_imm_gen;
+
 fn main() {
     println!("{:=^100}", " LX32 FULL HARDWARE VALIDATION ");
 
@@ -33,6 +39,24 @@ fn main() {
         iterations: 500,
         reg_range: (0, 32),
         imm_range: (-2048, 2047),
+        enable_logging: true,
+    });
+
+    // LSU validation
+    test_lsu::run_lsu_fuzzer(test_lsu::LsuTestParams {
+        iterations: 2000,
+        reg_range: (0, 32),
+        imm_range: (-2048, 2047),
+        enable_logging: true,
+    });
+
+    // IMM_GEN validation
+    test_imm_gen::run_imm_gen_fuzzer(test_imm_gen::ImmGenTestParams {
+        iterations: 2000,
+        rd_range: (1, 32),
+        branch_offset_range: (-1024, 1024),
+        i_imm_range: (-2048, 2047),
+        s_imm_range: (-2048, 2047),
         enable_logging: true,
     });
 
