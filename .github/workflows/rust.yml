@@ -1,4 +1,4 @@
-name: Rust
+name: Hardware CI (Verilator)
 
 on:
   push:
@@ -6,19 +6,30 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
-
+  test-all-testbenches:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        testbench:
+          - alu_tb
+          - branch_unit_tb
+          - control_unit_tb
+          - imm_gen_tb
+          - lsu_tb
+          - memory_sim_tb
+          - reg_generic_tb
+          - register_file_tb
+          - lx32_system_tb
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-      working-directory: tools/alu_tester
-    - name: Run tests
-      run: cargo test --verbose
-      working-directory: tools/alu_tester
+    
+    - name: Install Verilator
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y verilator
+
+    - name: Build and Test SystemVerilog
+      run: make sim TB=${{ matrix.testbench }}
