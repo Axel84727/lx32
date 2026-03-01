@@ -33,9 +33,7 @@ jobs:
         workspaces: tools/lx32_validator
     
     - name: Build
-      run: cargo build --release --verbose
-      working-directory: tools/lx32_validator
+      run: cargo build --release --verbose --manifest-path tools/lx32_validator/Cargo.toml
     
     - name: Run Tests
-      run: cargo run --release --verbose
-      working-directory: tools/lx32_validator
+      run: cargo run --release --verbose --manifest-path tools/lx32_validator/Cargo.toml
