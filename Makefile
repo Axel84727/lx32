@@ -16,9 +16,16 @@ TB_CORE         := tb/core
 .PHONY: help sim clean
 
 
-VERILATOR_ROOT = /opt/homebrew/Cellar/verilator/5.044/share/verilator
-VERILATOR_INC  = $(VERILATOR_ROOT)/include
-VALIDATOR_DIR  = tools/lx32_validator
+# Detect OS and set Verilator paths accordingly
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	VERILATOR_ROOT := /opt/homebrew/Cellar/verilator/5.044/share/verilator
+else
+	VERILATOR_ROOT := /usr/share/verilator
+endif
+
+VERILATOR_INC  := $(VERILATOR_ROOT)/include
+VALIDATOR_DIR  := tools/lx32_validator
 
 librust:
 	# 1. Generate C++ files
