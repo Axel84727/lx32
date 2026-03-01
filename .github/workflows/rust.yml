@@ -15,26 +15,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
-    
+
     - name: Install Verilator
       run: |
         sudo apt-get update
         sudo apt-get install -y verilator
 
     - name: Verify Verilator Install
-      run: which verilator && verilator --version
+      run: |
+        which verilator
+        verilator --version
 
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
         workspaces: tools/lx32_validator
-    
+
     - name: Generate RTL + Build + Run
-      env:
-        VERILATOR_ROOT: /usr/share/verilator
       run: |
         make -C ../.. librust
         test -d ../../.sim/lx32_lib
