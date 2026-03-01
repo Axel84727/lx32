@@ -11,13 +11,24 @@ mod test_control_unit;
 fn main() {
     println!("{:=^100}", " LX32 FULL HARDWARE VALIDATION ");
 
-    // Test the ALU with 5,000 operations
-    //test_alu::run_alu_fuzzer(5000);
+    // ALU validation
+    test_alu::run_alu_fuzzer(test_alu::AluTestParams {
+        iterations: 3000,
+        rd_range: (1, 32),
+        rs1_range: (0, 32),
+        imm_range: (0, 4096),
+        enable_logging: false,
+    });
 
-    // Test the Branches with 10,000 operations (Huge Test)
-    //test_branch_unit::run_branch_fuzzer(10000);
+    // Branch validation
+    test_branch_unit::run_branch_fuzzer(test_branch_unit::BranchTestParams {
+        iterations: 10000,
+        reg_range: (0, 32),
+        offset_word_range: (-128, 128),
+        enable_logging: false,
+    });
 
-    // Test the Control Unit with 500 iterations
+    // Control Unit validation
     test_control_unit::run_control_unit_fuzzer(test_control_unit::ControlUnitTestParams {
         iterations: 500,
         reg_range: (0, 32),
