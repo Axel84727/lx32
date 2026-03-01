@@ -48,6 +48,7 @@ module lx32_system (
   logic        branch_en, branch_taken;
   logic [1:0]  result_src;
   alu_op_e     alu_control;
+  branch_op_e  branch_op_ctrl; // Internal wire for decoded branch type
 
   // ------------------------------------------------------------
   // Program Counter (PC) Logic - Asynchronous Reset
@@ -60,6 +61,8 @@ module lx32_system (
   /* verilator lint_on SYNCASYNCNET */
 
   assign pc_out  = pc;
+
+  // PC Target Mux: Jump only if it's a branch instruction AND the condition is met
   assign next_pc = (branch_en && branch_taken) ? (pc + imm_ext) : (pc + 4);
 
   // ------------------------------------------------------------
@@ -74,6 +77,7 @@ module lx32_system (
     .mem_write   (mem_write),
     .result_src  (result_src),
     .branch      (branch_en),
+    .branch_op   (branch_op_ctrl), // Connected to new control output
     .alu_control (alu_control)
   );
 
@@ -117,10 +121,10 @@ module lx32_system (
   // Branch Evaluation Unit
   // ------------------------------------------------------------
   branch_unit core_branch_unit (
-    .src_a        (alu_a),
-    .src_b        (alu_b),
+    .src_a        (rs1_data),       // Use raw register data for comparison
+    .src_b        (rs2_data),       // Branches compare x[rs1] and x[rs2]
     .is_branch    (branch_en),
-    .branch_op    (branch_op_e'(instr[14:12])),
+    .branch_op    (branch_op_ctrl), // Uses the decoded enum from Control Unit
     .branch_taken (branch_taken)
   );
 

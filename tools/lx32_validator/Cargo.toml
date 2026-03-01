@@ -1,7 +1,10 @@
 [package]
-name = "alu_tester"
+name = "lx32_validator"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 rand = "0.10.0"
+
+[build-dependencies]
+cc = "1.2.56"
