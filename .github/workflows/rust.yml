@@ -23,15 +23,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y verilator
+
+    - name: Create .sim Directory
+      run: mkdir -p .sim
     
     - name: Build RTL Library
       run: make librust
     
     - name: Verify Verilator Install
       run: which verilator && verilator --version
-
-    - name: Create .sim Directory
-      run: mkdir -p .sim
 
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
