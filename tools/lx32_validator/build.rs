@@ -1,7 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-
+//test
 fn main() {
     // Detect the location of Verilator: prefer VERILATOR_ROOT if set,
     // otherwise guess by platform.
