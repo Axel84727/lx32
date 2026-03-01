@@ -28,6 +28,7 @@ VERILATOR_INC  := $(VERILATOR_ROOT)/include
 VALIDATOR_DIR  := tools/lx32_validator
 
 librust:
+	@mkdir -p .sim/lx32_lib
 	# 1. Generate C++ files
 	verilator -Wall --cc \
 		--Mdir .sim/lx32_lib \
