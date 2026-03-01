@@ -1,26 +1,34 @@
 # ============================================================
-# LX32 Makefile :: SystemVerilog Simulation (Verilator 5.044)
+# LX32 Makefile :: SystemVerilog Simulation (Verilator portable)
 # ============================================================
 
 SHELL := /bin/sh
-VERILATOR       ?= verilator
+VERILATOR ?= verilator
 VERILATOR_FLAGS ?= -Wall -Wno-fatal --binary --trace --trace-structs -O2 --timing
 
-OUTDIR          := .sim
-ROOT_DIR        := $(CURDIR)
-LIB_OUTDIR      := $(abspath $(OUTDIR)/lx32_lib)
+OUTDIR := .sim
+ROOT_DIR := $(CURDIR)
+LIB_OUTDIR := $(abspath $(OUTDIR)/lx32_lib)
 
 # Relative paths
-RTL_CORE        := rtl/core
-RTL_ARCH        := rtl/arch
-TB_CORE         := tb/core
+RTL_CORE := rtl/core
+RTL_ARCH := rtl/arch
+TB_CORE  := tb/core
 
 .PHONY: help sim clean
 
+# Verilator include path detection (Linux vs macOS)
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  # macOS (Homebrew)
+  VERILATOR_ROOT := $(shell brew --prefix verilator)/share/verilator
+else
+  # Linux (apt or general)
+  VERILATOR_ROOT := /usr/share/verilator
+endif
+VERILATOR_INC := $(VERILATOR_ROOT)/include
 
-VERILATOR_ROOT = /opt/homebrew/Cellar/verilator/5.044/share/verilator
-VERILATOR_INC  = $(VERILATOR_ROOT)/include
-VALIDATOR_DIR  = tools/lx32_validator
+VALIDATOR_DIR := tools/lx32_validator
 
 librust:
 	@rm -rf "$(LIB_OUTDIR)"
@@ -35,7 +43,7 @@ librust:
 		rtl/core/*.sv \
 		--top-module lx32_system
 
-	# 2. Compile the bridge using the correct Homebrew paths
+	# 2. Compile the bridge (portable include handling)
 	g++ -c -fPIC $(VALIDATOR_DIR)/src/bridge.cpp \
 		-I$(LIB_OUTDIR) \
 		-I$(VERILATOR_INC) \
