@@ -14,27 +14,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-    
-    - name: Install Verilator
+    - name: Checkout project
+      uses: actions/checkout@v4
+
+    - name: Debug existing Verilator config (pre clean)
+      run: |
+        echo "PATH: $PATH"
+        which verilator || true
+        verilator --version || true
+        env | grep VERILATOR || true
+        ls -lh /usr/bin/verilator || true
+        ls -lh /usr/local/bin/verilator || true
+        ls -lh /usr/share/verilator || true
+        ls -lh /usr/local/share/verilator || true
+
+    - name: Remove any old/corrupt Verilator
+      run: |
+        sudo apt-get remove --purge -y verilator || true
+        sudo rm -rf /usr/local/bin/verilator /usr/local/share/verilator
+        sudo rm -rf /usr/bin/verilator /usr/share/verilator
+        hash -r || true
+
+    - name: Install Verilator (linux, clean)
       run: |
         sudo apt-get update
         sudo apt-get install -y verilator
 
-    - name: Verify Verilator Install
-      run: which verilator && verilator --version
+    - name: Verify Verilator install OK
+      run: |
+        verilator --version
+        which verilator
+        ls -lh /usr/bin/verilator
+        ls -lh /usr/share/verilator
+        ls -lh /usr/share/verilator/include
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
 
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
       with:
         workspaces: tools/lx32_validator
-    
-    - name: Generate RTL + Build + Run
-      env:
-        VERILATOR_ROOT: /usr/share/verilator
+
+    - name: Build RTL, Rust & Run
       run: |
         make -C ../.. librust
         test -d ../../.sim/lx32_lib
