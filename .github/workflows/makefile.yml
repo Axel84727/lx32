@@ -1,0 +1,35 @@
+name: Hardware CI (Verilator)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-all-testbenches:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        testbench:
+          - alu_tb
+          - branch_unit_tb
+          - control_unit_tb
+          - imm_gen_tb
+          - lsu_tb
+          - memory_sim_tb
+          - reg_generic_tb
+          - register_file_tb
+          - lx32_system_tb
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Verilator
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y verilator
+
+    - name: Build and Test SystemVerilog
+      run: make sim TB=${{ matrix.testbench }}
