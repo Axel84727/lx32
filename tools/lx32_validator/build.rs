@@ -1,10 +1,15 @@
 use std::env;
 use std::fs;
 
-
 fn main() {
-    let verilator_root = env::var("VERILATOR_ROOT")
-        .unwrap_or_else(|_| "/opt/homebrew/opt/verilator/share/verilator".to_string());
+    let default_verilator_root = if env::consts::OS == "macos" {
+        "/opt/homebrew/opt/verilator/share/verilator"
+    } else {
+        "/usr/share/verilator"
+    };
+
+    let verilator_root =
+        env::var("VERILATOR_ROOT").unwrap_or_else(|_| default_verilator_root.to_string());
     let verilator_inc = format!("{}/include", verilator_root);
 
     // Path to the generated files
