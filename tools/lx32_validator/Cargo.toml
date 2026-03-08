@@ -3,6 +3,9 @@ name = "lx32_validator"
 version = "0.1.0"
 edition = "2024"
 
+[lints.rust]
+warnings = "allow"
+
 [dependencies]
 rand = "0.10.0"
 clap = { version = "4.5", features = ["derive"] }
