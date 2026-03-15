@@ -13,3 +13,4 @@ add_llvm_target(LX32CodeGen
 )
 
 add_subdirectory(target)
+add_subdirectory(mc)
