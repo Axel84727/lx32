@@ -6,7 +6,7 @@ sim/
 *.vvp
 
 # Rust / Tools
-tools/**/target/
+tools/lx32_validator/target/
 tools/**/*.tv
 !tools/**/src/
 !tools/**/Cargo.toml
