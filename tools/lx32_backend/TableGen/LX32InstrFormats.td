@@ -5,37 +5,24 @@
 // SPDX-License-Identifier: MIT
 //===----------------------------------------------------------------------===//
 
-include "LX32RegisterInfo.td"
-
 // -----------------------------------------------------------------------------
 // Minimal field mixins (pure encoding layer, single source of truth)
 // -----------------------------------------------------------------------------
 
 /// Destination register field.
-class LXInstRD {
-  bits<5> rd;
-  let Inst{11-7} = rd;
-}
+class LXInstRD { bits<5> rd; }
 
 /// Source register 1 field.
-class LXInstRS1 {
-  bits<5> rs1;
-  let Inst{19-15} = rs1;
-}
+class LXInstRS1 { bits<5> rs1; }
 
 /// Source register 2 field.
-class LXInstRS2 {
-  bits<5> rs2;
-  let Inst{24-20} = rs2;
-}
+class LXInstRS2 { bits<5> rs2; }
 
 /// Both source registers (composed).
 class LXInstRS1_RS2 : LXInstRS1, LXInstRS2 {}
 
 /// funct3 field.
-class LXInstFunct3<bits<3> funct3> {
-  let Inst{14-12} = funct3;
-}
+class LXInstFunct3<bits<3> funct3> {}
 
 /// Immediate field, 12 bits. Value is sign-extended.
 class LXImm12  { bits<12> imm12; } // sign-extended
@@ -57,7 +44,6 @@ class LXImm21  { bits<21> imm21; } // sign-extended, [20:1], LSB implicit zero
 class LX32Opcode<string name, bits<7> val> {
   string Name           = name;
   bits<7>  Val          = val;
-  let DecoderNamespace  = "LX32";
 }
 
 // -----------------------------------------------------------------------------
@@ -67,6 +53,8 @@ class LX32Opcode<string name, bits<7> val> {
 /// Base for all LX32 instructions: syntax, operands and semantic attributes.
 class LXInstCommon<dag outs, dag ins, string opcodestr, string argstr> : Instruction {
   let Namespace      = "LX32";
+  field bits<32> Inst;
+  let Size = 4;
   dag OutOperandList = outs;
   dag InOperandList  = ins;
   let AsmString      = !if(!empty(argstr), opcodestr # "\t" # argstr, opcodestr);
@@ -75,8 +63,6 @@ class LXInstCommon<dag outs, dag ins, string opcodestr, string argstr> : Instruc
 /// Main encoding base for all LX32 instructions.
 class LXInst<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
   LXInstCommon<outs, ins, opcodestr, argstr> {
-  field bits<32> Inst;
-  let Size      = 4;
   let Inst{6-0} = opcode.Val;
 }
 
@@ -96,7 +82,12 @@ def LX32GPRNOX0Out : RegisterOperand<GPRNOX0>;
 /// R-Type: Register-register format (rd, rs1, rs2, funct3, funct7).
 class LXInstRBase<bits<3> funct3, LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
   LXInst<opcode, outs, ins, opcodestr, argstr>,
-  LXInstRD, LXInstRS1_RS2, LXInstFunct3<funct3> {}
+  LXInstRD, LXInstRS1_RS2, LXInstFunct3<funct3> {
+  let Inst{11-7}  = rd;
+  let Inst{19-15} = rs1;
+  let Inst{24-20} = rs2;
+  let Inst{14-12} = funct3;
+}
 
 class LXInstR<bits<7> funct7, bits<3> funct3, LX32Opcode opcode,
               dag outs, dag ins, string opcodestr, string argstr> :
@@ -109,12 +100,16 @@ class LXInstR<bits<7> funct7, bits<3> funct3, LX32Opcode opcode,
 class LXInstIBase<bits<3> funct3, LX32Opcode opcode,
                   dag outs, dag ins, string opcodestr, string argstr> :
   LXInst<opcode, outs, ins, opcodestr, argstr>,
-  LXInstRD, LXInstRS1, LXInstFunct3<funct3>, LXImm12 {}
+  LXInstRD, LXInstRS1, LXInstFunct3<funct3>, LXImm12 {
+  let Inst{11-7}  = rd;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = funct3;
+  let Inst{31-20} = imm12;
+}
 
 class LXInstI<bits<3> funct3, LX32Opcode opcode,
               dag outs, dag ins, string opcodestr, string argstr> :
   LXInstIBase<funct3, opcode, outs, ins, opcodestr, argstr> {
-  let Inst{31-20} = imm12;
   // let mayLoad = 1; // For loads: set this attribute in instruction defs as needed.
 }
 
@@ -122,13 +117,17 @@ class LXInstI<bits<3> funct3, LX32Opcode opcode,
 class LXInstMemBase<bits<3> funct3, LX32Opcode opcode,
                     dag outs, dag ins, string opcodestr, string argstr> :
   LXInst<opcode, outs, ins, opcodestr, argstr>,
-  LXInstRS1_RS2, LXInstFunct3<funct3>, LXImm12 {}
+  LXInstRS1_RS2, LXInstFunct3<funct3>, LXImm12 {
+  let Inst{19-15} = rs1;
+  let Inst{24-20} = rs2;
+  let Inst{14-12} = funct3;
+  let Inst{31-25} = imm12{11-5};
+  let Inst{11-7}  = imm12{4-0};
+}
 
 class LXInstS<bits<3> funct3, LX32Opcode opcode,
               dag outs, dag ins, string opcodestr, string argstr> :
   LXInstMemBase<funct3, opcode, outs, ins, opcodestr, argstr> {
-  let Inst{31-25} = imm12{11-5};
-  let Inst{11-7}  = imm12{4-0};
   let mayStore = 1;
   let hasSideEffects = 1;
 }
@@ -140,15 +139,19 @@ class LXInstS<bits<3> funct3, LX32Opcode opcode,
 class LXInstBBase<bits<3> funct3, LX32Opcode opcode,
                   dag outs, dag ins, string opcodestr, string argstr> :
   LXInst<opcode, outs, ins, opcodestr, argstr>,
-  LXInstRS1_RS2, LXInstFunct3<funct3>, LXImm13 {}
-
-class LXInstB<bits<3> funct3, LX32Opcode opcode,
-              dag outs, dag ins, string opcodestr, string argstr> :
-  LXInstBBase<funct3, opcode, outs, ins, opcodestr, argstr> {
+  LXInstRS1_RS2, LXInstFunct3<funct3>, LXImm13 {
+  let Inst{19-15} = rs1;
+  let Inst{24-20} = rs2;
+  let Inst{14-12} = funct3;
   let Inst{31}     = imm13{12};
   let Inst{30-25}  = imm13{10-5};
   let Inst{11-8}   = imm13{4-1};
   let Inst{7}      = imm13{11};
+}
+
+class LXInstB<bits<3> funct3, LX32Opcode opcode,
+              dag outs, dag ins, string opcodestr, string argstr> :
+  LXInstBBase<funct3, opcode, outs, ins, opcodestr, argstr> {
   let isBranch = 1;
   let hasSideEffects = 1;
   let isTerminator = 1;
@@ -158,12 +161,13 @@ class LXInstB<bits<3> funct3, LX32Opcode opcode,
 /// U-Type: Upper immediate format (rd, imm20).
 class LXInstUBase<LX32Opcode opcode,
                   dag outs, dag ins, string opcodestr, string argstr> :
-  LXInst<opcode, outs, ins, opcodestr, argstr>, LXInstRD, LXImm20 {}
-
-class LXInstU<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
-  LXInstUBase<opcode, outs, ins, opcodestr, argstr> {
+  LXInst<opcode, outs, ins, opcodestr, argstr>, LXInstRD, LXImm20 {
+  let Inst{11-7}  = rd;
   let Inst{31-12} = imm20;
 }
+
+class LXInstU<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
+  LXInstUBase<opcode, outs, ins, opcodestr, argstr> {}
 
 /// J-Type: Unconditional jump (rd, imm21).
 /// imm21 models bits [20:1]. Bit 0 is always zero and not encoded.
@@ -171,14 +175,16 @@ class LXInstU<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string arg
 /// Encoding: imm[20|10:1|11|19:12] → Inst[31|30:21|20|19:12|11:7]
 class LXInstJBase<LX32Opcode opcode,
                   dag outs, dag ins, string opcodestr, string argstr> :
-  LXInst<opcode, outs, ins, opcodestr, argstr>, LXInstRD, LXImm21 {}
-
-class LXInstJ<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
-  LXInstJBase<opcode, outs, ins, opcodestr, argstr> {
+  LXInst<opcode, outs, ins, opcodestr, argstr>, LXInstRD, LXImm21 {
+  let Inst{11-7}  = rd;
   let Inst{31}     = imm21{20};
   let Inst{30-21}  = imm21{10-1};
   let Inst{20}     = imm21{11};
   let Inst{19-12}  = imm21{19-12};
+}
+
+class LXInstJ<LX32Opcode opcode, dag outs, dag ins, string opcodestr, string argstr> :
+  LXInstJBase<opcode, outs, ins, opcodestr, argstr> {
   let isBranch = 1;
   let hasSideEffects = 1;
   let isTerminator = 1;

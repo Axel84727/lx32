@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: MIT
 //
 //===----------------------------------------------------------------------===//
-include "llvm/Target/Target.td"
 
 let Namespace = "LX32" in {
 class LX32Reg<bits<5> Enc, string n, list<string> alt = []> : Register<n> {
