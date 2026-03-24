@@ -1,55 +1,38 @@
-//===-- LX32.td - Main Target Description File -------------*- tablegen -*-===//
+//===-- LX32.td - Describe the LX32 Target Machine ---------*- tablegen -*-===//
 //
 // Part of the LX32 Project
 // SPDX-License-Identifier: MIT
 //
 //===----------------------------------------------------------------------===//
 //
-// This file assembles the register information, instruction formats, and 
-// basic opcodes to initialize the LX32 backend. 
-//
-// Verified: ADD instruction generates correct Machine Code (Opcode 0x33).
+// This is the top-level TableGen file for the LX32 architecture. It bundles
+// together register info, instruction formats, and instruction definitions.
 //
 //===----------------------------------------------------------------------===//
 
 include "llvm/Target/Target.td"
 
-// -----------------------------------------------------------------------------
-// Component Includes
-// -----------------------------------------------------------------------------
+//===----------------------------------------------------------------------===//
+// Target-specific Hierarchy Includes
+//===----------------------------------------------------------------------===//
 
 include "LX32RegisterInfo.td"
 include "LX32InstrFormats.td"
+include "LX32InstrInfo.td"
 
-// -----------------------------------------------------------------------------
-// Opcode Map (Based on RISC-V 32-bit Base ISA)
-// -----------------------------------------------------------------------------
+//===----------------------------------------------------------------------===//
+// Instruction Set and Target Definitions
+//===----------------------------------------------------------------------===//
 
-def op_arith : LX32Opcode<"arith", 0b0110011>; // Register-Register ALU
-def op_imm   : LX32Opcode<"imm",   0b0010011>; // Register-Immediate ALU
-def op_load  : LX32Opcode<"load",  0b0000011>; // Memory Loads
-def op_store : LX32Opcode<"store", 0b0100011>; // Memory Stores
-
-// -----------------------------------------------------------------------------
-// Instruction Definitions
-// -----------------------------------------------------------------------------
-
-// ADD rd, rs1, rs2 (rd = rs1 + rs2)
-// Encoding: [funct7][rs2][rs1][funct3][rd][opcode]
-def ADD : LXInstR<0b0000000, 0b000, op_arith, 
-                 (outs GPR:$rd), 
-                 (ins GPR:$rs1, GPR:$rs2), 
-                 "add", "$rd, $rs1, $rs2">;
-
-// -----------------------------------------------------------------------------
-// Target Initialization
-// -----------------------------------------------------------------------------
-
+/// The InstrInfo class represents the target's instruction set properties.
 def LX32InstrInfo : InstrInfo {
-  // Global instruction properties for TableGen emitters
+  /// guessInstructionProperties = 0 tells TableGen NOT to guess side effects.
+  /// This forces us to be explicit and professional with our definitions.
   let guessInstructionProperties = 0;
 }
 
+/// This is the primary target definition. It ties everything together.
 def LX32 : Target {
+  /// InstructionSet points to our instruction set metadata.
   let InstructionSet = LX32InstrInfo;
 }
