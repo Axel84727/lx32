@@ -107,3 +107,42 @@ validate-long-custom: ## Custom long test (usage: make validate-long-custom NUM=
 
 validate-help: ## Show validator CLI options
 	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --help
+# ======================
+# LX32 Backend Targets  
+# ======================
+LLVM_DIR     ?= $(HOME)/llvm-project
+BACKEND_SRC  := $(CURDIR)/tools/lx32_backend
+LLVM_REPO    := https://github.com/llvm/llvm-project
+NPROC        := $(shell nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+LLD_EXISTS   := $(shell which lld 2>/dev/null)
+
+.PHONY: check-llvm install-backend build-backend setup-backend
+
+check-llvm: ## Check LLVM, clone if missing
+	@if [ -d "$(LLVM_DIR)" ]; then \
+		echo "✓ LLVM found at $(LLVM_DIR)"; \
+	else \
+		echo "→ Cloning LLVM..."; \
+		git clone --depth=1 $(LLVM_REPO) $(LLVM_DIR); \
+		echo "✓ LLVM cloned"; \
+	fi
+
+install-backend: check-llvm ## Symlink LX32 backend into LLVM tree
+	@echo "→ Linking LX32 backend..."
+	@rm -rf $(LLVM_DIR)/llvm/lib/Target/LX32
+	@ln -s $(BACKEND_SRC) $(LLVM_DIR)/llvm/lib/Target/LX32
+	@echo "✓ Backend linked (edits reflect instantly)"
+
+build-backend: install-backend ## Build LLVM with LX32 + native backend
+	@echo "→ Configuring LLVM..."
+	@cmake -S $(LLVM_DIR)/llvm -B $(LLVM_DIR)/build -G Ninja \
+		-DLLVM_TARGETS_TO_BUILD="LX32;AArch64" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_PARALLEL_LINK_JOBS=2 \
+		$(if $(LLD_EXISTS),-DLLVM_USE_LINKER=lld)
+	@echo "→ Building ($(NPROC) cores)..."
+	@ninja -C $(LLVM_DIR)/build -j$(NPROC)
+	@echo "✓ Backend built"
+
+setup-backend: build-backend ## Full setup: clone, link, build
+	@echo "✓ LX32 backend ready"
