@@ -19,6 +19,7 @@ include "llvm/Target/Target.td"
 include "LX32RegisterInfo.td"
 include "LX32InstrFormats.td"
 include "LX32InstrInfo.td"
+include "LX32CallingConv.td"
 
 //===----------------------------------------------------------------------===//
 // Instruction Set and Target Definitions
