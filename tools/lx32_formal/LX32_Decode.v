@@ -141,14 +141,6 @@ Definition imm_gen_spec (instr : word) : word :=
 (* ------------------------------------------------------------------ *)
 
 
-Lemma land31_lt32 : forall n, (N.land n 31 < 32)%N.
-Proof.
-  intro n.
-  apply N.le_lt_trans with 31%N.
-  - apply N.land_le_r.
-  - compute. easy.
-Qed.
-
 Lemma instr_rd_in_range :
   forall instr : word, (instr_rd instr < REG_COUNT)%nat.
 Proof.

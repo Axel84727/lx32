@@ -18,9 +18,37 @@ echo -e "${BLUE}==> [1/4] Checking System Dependencies...${NC}"
 
 # Check required tools for simulation, formal verification, and closure runs
 required_tools=(verilator cargo coqc sby yosys z3 g++)
+missing_tools=()
 for tool in "${required_tools[@]}"; do
     if ! command -v "$tool" &> /dev/null; then
-        echo -e "${RED}Error: '$tool' not found. Install required dependencies before running setup.${NC}"
+        missing_tools+=("$tool")
+    fi
+done
+
+if [ ${#missing_tools[@]} -gt 0 ]; then
+    echo -e "${BLUE}Missing tools detected: ${missing_tools[*]}${NC}"
+    echo -e "${BLUE}Attempting automatic install...${NC}"
+
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y verilator g++ coq yosys z3 cargo python3 git make
+        if ! command -v sby &> /dev/null; then
+            tmp_sby_dir="$(mktemp -d)"
+            git clone --depth=1 https://github.com/YosysHQ/sby.git "$tmp_sby_dir/sby"
+            sudo make -C "$tmp_sby_dir/sby" install
+            rm -rf "$tmp_sby_dir"
+        fi
+    elif command -v brew &> /dev/null; then
+        brew install verilator rust coq yosys z3 sby
+    else
+        echo -e "${RED}Error: no supported package manager found (apt-get/brew).${NC}"
+        exit 1
+    fi
+fi
+
+for tool in "${required_tools[@]}"; do
+    if ! command -v "$tool" &> /dev/null; then
+        echo -e "${RED}Error: '$tool' is still missing after auto-install attempt.${NC}"
         exit 1
     fi
 done

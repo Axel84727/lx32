@@ -19,9 +19,9 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y verilator g++ coq yosys z3 python3-pip
-        python3 -m pip install --user symbiyosys
-        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        sudo apt-get install -y verilator g++ coq yosys z3 python3 git make cargo
+        git clone --depth=1 https://github.com/YosysHQ/sby.git /tmp/sby
+        sudo make -C /tmp/sby install
 
     - name: Install Rust Toolchain
       uses: dtolnay/rust-toolchain@stable
