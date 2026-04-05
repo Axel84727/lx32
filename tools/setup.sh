@@ -16,17 +16,14 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}==> [1/4] Checking System Dependencies...${NC}"
 
-# Check for Verilator (The RTL Simulator)
-if ! command -v verilator &> /dev/null; then
-    echo -e "${RED}Error: 'verilator' not found. Please install it to continue.${NC}"
-    exit 1
-fi
-
-# Check for Rust/Cargo (The Validation Engine)
-if ! command -v cargo &> /dev/null; then
-    echo -e "${RED}Error: 'cargo' (Rust) not found. Please install the Rust toolchain.${NC}"
-    exit 1
-fi
+# Check required tools for simulation, formal verification, and closure runs
+required_tools=(verilator cargo coqc sby yosys z3 g++)
+for tool in "${required_tools[@]}"; do
+    if ! command -v "$tool" &> /dev/null; then
+        echo -e "${RED}Error: '$tool' not found. Install required dependencies before running setup.${NC}"
+        exit 1
+    fi
+done
 
 # Determine Project Root (works regardless of where the script is called from)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

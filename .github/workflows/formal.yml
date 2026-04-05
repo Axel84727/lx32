@@ -1,0 +1,45 @@
+name: Formal CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  closure-proof:
+    name: "Full Closure Gate (Coq + Formal + Lockstep Seeded)"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y verilator g++ coq yosys z3 python3-pip
+        python3 -m pip install --user symbiyosys
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Install Rust Toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: tools/lx32_validator
+
+    - name: Verify Toolchain
+      run: |
+        coqc --version
+        sby --version
+        yosys -V
+        z3 --version
+        verilator --version
+
+    - name: Run Full Closure Proof Gate
+      run: |
+        make closure-proof SEED=42
+
