@@ -279,3 +279,10 @@ compile-c: ## Compile, assemble, and link a custom C file (usage: make compile-c
 	@$(LLVM_DIR)/build/bin/llvm-objcopy -O binary "$${PROG%.*}.elf" "$${PROG%.*}.bin"
 	@echo "✓ Success! Generated $${PROG%.*}.elf and $${PROG%.*}.bin"
 
+run-binary: librust ## Run a custom LX32 binary on the RTL simulation (usage: make run-binary BIN=my_program.bin)
+	@if [ -z "$(BIN)" ]; then echo "ERROR: run-binary requires BIN=<path_to_bin_file>"; exit 2; fi
+	@if [ ! -f "$(BIN)" ]; then echo "ERROR: File $(BIN) not found"; exit 2; fi
+	@echo "→ Running $(BIN) on LX32 RTL Simulation..."
+	@cd $(VALIDATOR_DIR) && cargo run --release --bin run_program -- --binary $(abspath $(BIN))
+
+
