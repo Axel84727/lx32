@@ -206,6 +206,18 @@ bool LX32InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     MBB.erase(MI);
     return true;
 
+  case LX32::PseudoBR: {
+    // Expand to: JAL x0, target
+    //   x0 (define, dead) — result register; we discard the PC+4 return address
+    //   target            — the branch target (simm21 immediate)
+    const MachineOperand &TargetOp = MI.getOperand(0);
+    BuildMI(MBB, MI, DL, get(LX32::JAL))
+        .addReg(LX32::X0, RegState::Define | RegState::Dead)
+        ->addOperand(TargetOp);
+    MBB.erase(MI);
+    return true;
+  }
+
   case LX32::PseudoNOP:
     // Expand to: ADDI x0, x0, 0
     //   Both source and destination are x0, immediate is 0.  The instruction
