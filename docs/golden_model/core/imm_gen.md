@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `imm_gen` module implements the immediate generation logic for the LX32 golden model, generating sign-extended immediates for RV32I base ISA instructions. It mirrors RTL immediate generation, providing reference extraction and extension for all instruction types.
+The `imm_gen` module implements the immediate generation logic for the LX32 golden model, generating sign-extended immediates for LX32 base ISA instructions. It mirrors RTL immediate generation, providing reference extraction and extension for all instruction types.
 
 ---
 

@@ -1,7 +1,7 @@
 # lx32_isa_pkg — RTL Architecture Package Documentation
 
 ## Overview
-The `lx32_isa_pkg` package defines opcode enumerations and instruction class encodings for the LX32 processor RTL core. It provides explicit enumerations for RV32I instructions, standardizing opcode values and signal semantics for all modules.
+The `lx32_isa_pkg` package defines opcode enumerations and instruction class encodings for the LX32 processor RTL core. It provides explicit enumerations for LX32 base instructions, standardizing opcode values and signal semantics for all modules.
 
 ---
 

@@ -5,7 +5,7 @@ package lx32_alu_pkg;
   // LX32 ALU Operation Definitions
   // ============================================================
   // Defines the canonical ALU operations supported by the
-  // RV32I base instruction set.
+  // LX32 base base instruction set.
   //
   // This package establishes the execution contract between:
   //   - Decoder

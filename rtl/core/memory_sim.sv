@@ -26,7 +26,7 @@ module memory_sim (
   // ============================================================
   // LX32 Simulation Memory
   // ============================================================
-  // Dual-port memory model for RV32I core simulation.
+  // Dual-port memory model for LX32 base core simulation.
   //
   // Features:
   //   - 4 KB total memory (1024 x 32-bit words)
@@ -71,7 +71,7 @@ module memory_sim (
   // ------------------------------------------------------------
   // Word-Aligned Address Decode
   // ------------------------------------------------------------
-  // RV32I instructions are 32-bit aligned.
+  // LX32 base instructions are 32-bit aligned.
   // Bits [1:0] are ignored.
   // ------------------------------------------------------------
   logic [9:0] i_index;

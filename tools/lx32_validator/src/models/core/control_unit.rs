@@ -8,7 +8,7 @@
 // Design Goals:
 //   - Type-safe opcode usage
 //   - No implicit latches (Default assignments + Default cases)
-//   - Full RV32I ALU coverage
+//   - Full LX32 base ALU coverage
 // ============================================================
 
 use crate::models::arch::lx32_alu_pkg::alu_op_e;

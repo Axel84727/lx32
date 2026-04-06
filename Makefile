@@ -220,7 +220,7 @@ LLVM_REPO    := https://github.com/llvm/llvm-project
 NPROC        := $(shell nproc 2>/dev/null || sysctl -n hw.logicalcpu)
 LLD_EXISTS   := $(shell which lld 2>/dev/null)
 
-.PHONY: check-llvm install-backend build-backend setup-backend
+.PHONY: check-llvm install-backend build-backend setup-backend test-baremetal compile-c
 
 check-llvm: ## Check LLVM, clone if missing
 	@if [ -d "$(LLVM_DIR)" ]; then \
@@ -241,12 +241,41 @@ build-backend: install-backend ## Build LLVM with LX32 + native backend
 	@echo "→ Configuring LLVM..."
 	@cmake -S $(LLVM_DIR)/llvm -B $(LLVM_DIR)/build -G Ninja \
 		-DLLVM_TARGETS_TO_BUILD="LX32;AArch64" \
+		-DLLVM_ENABLE_PROJECTS="clang;lld" \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DLLVM_PARALLEL_LINK_JOBS=2 \
 		$(if $(LLD_EXISTS),-DLLVM_USE_LINKER=lld)
+	@echo "→ Bootstrapping llvm-tblgen..."
+	@ninja -C $(LLVM_DIR)/build llvm-tblgen
+	@echo "→ Generating LX32 TableGen .inc files..."
+	@cd $(BACKEND_SRC)/TableGen && \
+		LLVM_TBLGEN=$(LLVM_DIR)/build/bin/llvm-tblgen \
+		LLVM_INCLUDE_DIR=$(LLVM_DIR)/llvm/include \
+		bash ./compile_td.sh
 	@echo "→ Building ($(NPROC) cores)..."
 	@ninja -C $(LLVM_DIR)/build -j$(NPROC)
 	@echo "✓ Backend built"
 
 setup-backend: build-backend ## Full setup: clone, link, build
 	@echo "✓ LX32 backend ready"
+
+# ======================
+# Baremetal C Development
+# ======================
+
+test-baremetal: ## Run baremetal C smoke tests using the LX32 backend
+	@echo "→ Running baremetal tests..."
+	@cd $(BACKEND_SRC)/tests/baremetal && ./run_baremetal_smoke.sh
+
+compile-c: ## Compile, assemble, and link a custom C file (usage: make compile-c PROG=my_prog.c)
+	@if [ -z "$(PROG)" ]; then echo "ERROR: compile-c requires PROG=<path_to_c_file>"; exit 2; fi
+	@if [ ! -f "$(PROG)" ]; then echo "ERROR: File $(PROG) not found"; exit 2; fi
+	@echo "→ Compiling $(PROG) to LX32 object..."
+	@bash $(BACKEND_SRC)/tests/compile_baremetal_c.sh "$(PROG)"
+	@echo "→ Assembling crt0.S..."
+	@$(LLVM_DIR)/build/bin/llvm-mc -arch=lx32 -filetype=obj $(BACKEND_SRC)/tests/baremetal/crt0.S -o $(BACKEND_SRC)/tests/baremetal/crt0.o
+	@echo "→ Linking into ELF and flat Binary..."
+	@$(LLVM_DIR)/build/bin/ld.lld -T $(BACKEND_SRC)/tests/baremetal/link.ld $(BACKEND_SRC)/tests/baremetal/crt0.o "$${PROG%.*}.o" -o "$${PROG%.*}.elf"
+	@$(LLVM_DIR)/build/bin/llvm-objcopy -O binary "$${PROG%.*}.elf" "$${PROG%.*}.bin"
+	@echo "✓ Success! Generated $${PROG%.*}.elf and $${PROG%.*}.bin"
+

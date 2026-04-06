@@ -15,6 +15,7 @@ lx32 is Phase 0 of a larger architecture called **lx-Ω** — a full-stack compu
 
 - **lx32** — 32-bit single-cycle core ✅ complete
 - **LLVM backend** — compiler support for the lx32 ISA (in progress, check branch `feat/llvm-backend`)
+  - **Want to write C code for lx32?** Read the [Baremetal C Development Guide](README_C_DEV.md).
 - **lx-Ω OS** — a capability-based microkernel written in Rust
 - **lx-Ω hardware** — custom PCB and FPGA implementation
 - **lx-Ω laptop** — a complete laptop built from the ground up
@@ -25,7 +26,7 @@ Every design decision is documented. Every module has a specification, a Rust re
 
 ## Architecture
 
-lx32 implements a custom 32-bit ISA structurally similar to RV32I. The core is single-cycle, fully documented, and verified.
+lx32 implements a custom 32-bit ISA structurally similar to LX32 base. The core is single-cycle, fully documented, and verified.
 
 | Property | Value |
 |---|---|

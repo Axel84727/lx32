@@ -18,21 +18,28 @@
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/Support/DataTypes.h"
 #include <memory>
+
 namespace llvm {
+class Target;
+class MCInstrInfo;
+class MCRegisterInfo;
+class MCSubtargetInfo;
+class MCContext;
+class MCCodeEmitter;
+class MCAsmBackend;
+class MCTargetOptions;
+class MCObjectTargetWriter;
 
-    //===------------------------------------------------------------------===//
-    // Section 1 — Forward declarations used by MC factories
-    //===------------------------------------------------------------------===//
+MCCodeEmitter *createLX32MCCodeEmitter(const MCInstrInfo &MCII,
+                                        MCContext &Ctx);
 
-    class MCAsmBackend;
-    class MCCodeEmitter;
-    class MCContext;
-    class MCInstrInfo;
-    class MCObjectTargetWriter;
-    class MCRegisterInfo;
-    class MCRelocationInfo;
-    class MCSubtargetInfo;
-    class Target;
-}
+MCAsmBackend *createLX32AsmBackend(const Target &T,
+                                    const MCSubtargetInfo &STI,
+                                    const MCRegisterInfo &MRI,
+                                    const MCTargetOptions &Options);
+
+std::unique_ptr<MCObjectTargetWriter> createLX32ELFObjectWriter(uint8_t OSABI);
+
+} // End llvm namespace
 
 #endif // LLVM_LIB_TARGET_LX32_MCTARGETDESC_LX32MCTARGETDESC_H

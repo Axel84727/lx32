@@ -19,7 +19,7 @@ module imm_gen (
   // ============================================================
   // LX32 Immediate Generation Unit
   // ============================================================
-  // Generates sign-extended immediates for RV32I base ISA.
+  // Generates sign-extended immediates for LX32 base ISA.
   //
   // Design Principles:
   //   - Opcode-driven decode

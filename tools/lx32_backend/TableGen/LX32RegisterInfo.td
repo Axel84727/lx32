@@ -25,7 +25,7 @@ class LX32Reg<bits<5> Enc, string n, list<string> alt = []> : Register<n> {
 //===----------------------------------------------------------------------===//
 // Alternate name index
 //
-// ABIRegAltName provides the RISC-V ABI aliases (zero, ra, sp, ...).
+// ABIRegAltName provides the standard ABI aliases (zero, ra, sp, ...).
 // FallbackRegAltNameIndex = NoRegAltName means that registers without an
 // explicit ABI alias fall back to the canonical hardware name.
 //===----------------------------------------------------------------------===//
@@ -37,7 +37,7 @@ def ABIRegAltName : RegAltNameIndex;
 // Register definitions
 //
 // Registers are listed in hardware-encoding order (X0-X31).
-// ABI aliases follow the RISC-V ILP32 convention.
+// ABI aliases follow standard ILP32 conventions.
 //   X0        : hardwired zero — marked isConstant so the allocator never
 //               assigns it as a destination.
 //   X1  (ra)  : return address

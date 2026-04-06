@@ -1,7 +1,7 @@
 // ============================================================
-// RV32I Base ISA – Opcode Definitions
+// LX32 base ISA – Opcode Definitions
 // ============================================================
-// All opcodes are 7-bit wide as defined by the RISC-V spec.
+// All opcodes are 7-bit wide as defined by the LX32 spec.
 // This package defines the architectural contract between
 // the decoder and the rest of the core.
 // ============================================================

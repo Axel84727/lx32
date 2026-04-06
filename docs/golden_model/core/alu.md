@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `alu` module implements the Arithmetic Logic Unit (ALU) for the LX32 golden model, supporting RV32I base ALU operations. It mirrors the RTL ALU functionality, providing reference computation for arithmetic, logical, shift, and comparison operations. The module is used for verification, equivalence checking, and reference testing of ALU behavior.
+The `alu` module implements the Arithmetic Logic Unit (ALU) for the LX32 golden model, supporting LX32 base base ALU operations. It mirrors the RTL ALU functionality, providing reference computation for arithmetic, logical, shift, and comparison operations. The module is used for verification, equivalence checking, and reference testing of ALU behavior.
 
 ---
 

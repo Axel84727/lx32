@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "usage: $0 <input.c> [output_prefix]" >&2
+  exit 1
+fi
+
+INPUT_C="$1"
+if [[ ! -f "$INPUT_C" ]]; then
+  echo "error: input C file not found: $INPUT_C" >&2
+  exit 1
+fi
+
+OUT_PREFIX="${2:-${INPUT_C%.*}}"
+OUT_LL="${OUT_PREFIX}.ll"
+OUT_S="${OUT_PREFIX}.s"
+OUT_O="${OUT_PREFIX}.o"
+
+pick_llvm_bin() {
+  local name="$1"
+  if [[ -x "/Users/axel/llvm-project/build/bin/$name" ]]; then
+    echo "/Users/axel/llvm-project/build/bin/$name"
+    return
+  fi
+  command -v "$name"
+}
+
+CLANG="$(pick_llvm_bin clang || true)"
+LLC="$(pick_llvm_bin llc || true)"
+
+if [[ -z "$CLANG" || ! -x "$CLANG" ]]; then
+  echo "error: clang not found" >&2
+  exit 1
+fi
+if [[ -z "$LLC" || ! -x "$LLC" ]]; then
+  echo "error: llc not found" >&2
+  exit 1
+fi
+
+COMMON_CFLAGS=(
+  -ffreestanding
+  -fno-builtin
+  -nostdlib
+  -fno-stack-protector
+  -O1
+  -S
+  -emit-llvm
+)
+
+# Prefer direct lx32 target; if clang frontend does not know lx32 yet,
+# fallback to generic 32-bit just to produce freestanding IR for llc.
+if "$CLANG" "${COMMON_CFLAGS[@]}" -target lx32-unknown-elf "$INPUT_C" -o "$OUT_LL" 2>/dev/null; then
+  C_TARGET="lx32-unknown-elf"
+else
+  "$CLANG" "${COMMON_CFLAGS[@]}" -target i386-unknown-elf "$INPUT_C" -o "$OUT_LL" 2>/dev/null
+  C_TARGET="generic 32-bit (fallback IR target)"
+
+  # Normalise target attributes so llc -march=lx32 does not inherit an incorrect CPU.
+  # macOS sed requires an explicit empty suffix for in-place editing.
+  sed -E -i '' \
+    -e 's/"target-cpu"="[^"]*"/"target-cpu"="generic"/g' \
+    -e 's/"target-features"="[^"]*"/"target-features"=""/g' \
+    "$OUT_LL"
+fi
+
+"$LLC" -march=lx32 -mcpu=generic -mtriple=lx32-unknown-elf -filetype=asm -o "$OUT_S" "$OUT_LL"
+
+# Object emission is optional at this stage; asm generation is the hard requirement.
+if "$LLC" -march=lx32 -mcpu=generic -mtriple=lx32-unknown-elf -filetype=obj -o "$OUT_O" "$OUT_LL"; then
+  OBJ_STATUS="ok"
+else
+  OBJ_STATUS="not available in this backend slice"
+  rm -f "$OUT_O"
+fi
+
+if grep -Eq "__[a-z0-9_]+(si3|di3)|memcpy|memset|memmove" "$OUT_LL" "$OUT_S"; then
+  echo "warning: libcall/runtime symbol detected in generated output" >&2
+fi
+
+echo "ok: compiled bare-metal C"
+echo "  input : $INPUT_C"
+echo "  c_target_for_ir : $C_TARGET"
+echo "  ir    : $OUT_LL"
+echo "  asm   : $OUT_S"
+echo "  obj   : $OUT_O ($OBJ_STATUS)"
+
+

@@ -211,10 +211,10 @@ This README provides a comprehensive guide to the LX32 project documentation. It
 - **mod.md**: Central repository, re-exports all architecture packages for unified access.
 
 ### Core Modules (`golden_model/core/`)
-- **alu.md**: Implements ALU for RV32I operations. Reference for arithmetic, logical, shift, and comparison. Unit tests: `test_alu.rs`.
-- **branch_unit.md**: Branch evaluation logic for RV32I branch conditions. Unit tests: `test_branch_unit.rs`.
+- **alu.md**: Implements ALU for LX32 base operations. Reference for arithmetic, logical, shift, and comparison. Unit tests: `test_alu.rs`.
+- **branch_unit.md**: Branch evaluation logic for LX32 base branch conditions. Unit tests: `test_branch_unit.rs`.
 - **control_unit.md**: Instruction decode logic, main control, ALU operation refinement. Unit tests: `test_control_unit.rs`.
-- **imm_gen.md**: Immediate generation logic for RV32I instructions. Unit tests: `test_imm_gen.rs`.
+- **imm_gen.md**: Immediate generation logic for LX32 base instructions. Unit tests: `test_imm_gen.rs`.
 - **lsu.md**: Load/Store Unit, single-cycle memory operations. Unit tests: `test_lsu.rs`.
 - **lx32_system.md**: Integrates all core sub-modules, single-cycle execution. Unit tests: `test_lx32_system.rs`.
 - **memory_sim.md**: Dual-port simulation memory, 4KB, word-aligned. Unit tests: `test_memory_sim.rs`.

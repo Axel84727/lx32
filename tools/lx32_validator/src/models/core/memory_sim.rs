@@ -1,7 +1,7 @@
 // ============================================================
 // LX32 Simulation Memory
 // ============================================================
-// Dual-port memory model for RV32I core simulation.
+// Dual-port memory model for LX32 base core simulation.
 //
 // Features:
 //   - 4 KB total memory (1024 x 32-bit words)

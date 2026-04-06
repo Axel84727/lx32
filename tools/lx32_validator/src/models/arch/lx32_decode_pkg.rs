@@ -1,5 +1,5 @@
 // ============================================================
-// RV32I Immediate Decode Package
+// LX32 base Immediate Decode Package
 // ============================================================
 // This package centralizes all immediate extraction logic
 // for the base ISA formats.

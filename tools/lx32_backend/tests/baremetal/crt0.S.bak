@@ -1,0 +1,53 @@
+# Crt0.s — LX32 C runtime startup (bare-metal, no libc, no ECALL)
+#
+# Terminación por MMIO puro — no usa ecall.
+# El testbench Verilator detecta: mem_we && mem_addr == 0xFFFFF004
+#
+# memory_sim.sv tiene 4 KB (1024 words, índice addr[11:2]).
+# 0xFFFFF004 está fuera del rango → el testbench C++ intercepta la escritura.
+#
+# Stack: top of memory_sim = 0x00001000 (4KB).
+# Ajustar si cambiás LENGTH en el linker script.
+
+    .section .text.startup, "ax", @progbits
+    .globl  _start
+    .type   _start, @function
+
+_start:
+    # ── Stack pointer ─────────────────────────────────────────
+    lui     sp, %hi(_stack_top)
+    addi    sp, sp, %lo(_stack_top)
+
+    # ── Zero BSS ──────────────────────────────────────────────
+    lui     a0, %hi(__bss_start)
+    addi    a0, a0, %lo(__bss_start)
+    lui     a1, %hi(__bss_end)
+    addi    a1, a1, %lo(__bss_end)
+_bss_loop:
+    bge     a0, a1, _bss_done
+    sw      zero, 0(a0)
+    addi    a0, a0, 4
+    j       _bss_loop
+_bss_done:
+
+    # ── Llamar main(0, NULL) ──────────────────────────────────
+    li      a0, 0
+    li      a1, 0
+    call    main
+
+    # ── Salida por MMIO (a0 = exit code de main) ─────────────
+    # El testbench detecta escritura a 0xFFFFF004 y termina la sim.
+    .globl  _exit
+    .type   _exit, @function
+_exit:
+    # t0 = 0xFFFFF000 (MMIO base)
+    lui     t0, 0xFFFFF          # t0 = 0xFFFFF000
+    sw      a0, 4(t0)            # mem[0xFFFFF004] = exit_code  → halt
+
+    # Safety: si el testbench no captura, loop infinito
+_halt:
+    j       _halt
+
+    .size   _start, . - _start
+    .size   _exit,  . - _exit
+

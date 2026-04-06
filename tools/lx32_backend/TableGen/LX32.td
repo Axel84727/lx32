@@ -38,6 +38,10 @@ include "LX32InstrFormats.td"
 include "LX32InstrInfo.td"
 include "LX32CallingConv.td"
 
+// Minimal processor model so TableGen emits a non-empty CPU table and
+// `-mcpu=generic` is recognized by MCSubtargetInfo.
+def : ProcessorModel<"generic", NoSchedModel, []>;
+
 //===----------------------------------------------------------------------===//
 // Instruction set descriptor
 //
@@ -50,6 +54,14 @@ include "LX32CallingConv.td"
 
 def LX32InstrInfo : InstrInfo {
   let guessInstructionProperties = 0;
+}
+
+def LX32AsmParser : AsmParser {
+  let ShouldEmitMatchRegisterName = 1;
+}
+
+def LX32AsmWriter : AsmWriter {
+  int PassSubtarget = 1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -75,5 +87,7 @@ defm : RemapAllTargetPseudoPointerOperands<GPR>;
 
 def LX32 : Target {
   let InstructionSet      = LX32InstrInfo;
+  let AssemblyParsers     = [LX32AsmParser];
+  let AssemblyWriters     = [LX32AsmWriter];
   let AllowRegisterRenaming = 1;
 }

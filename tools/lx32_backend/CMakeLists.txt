@@ -1,5 +1,5 @@
 add_llvm_component_group(LX32)
-
-add_subdirectory(target)
-add_subdirectory(mc)
+add_subdirectory(TargetInfo)
+add_subdirectory(MCTargetDesc)
+add_subdirectory(AsmParser)
 add_subdirectory(core)

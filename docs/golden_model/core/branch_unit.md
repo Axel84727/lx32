@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `branch_unit` module implements the branch evaluation logic for the LX32 golden model, supporting RV32I base ISA branch conditions. It mirrors RTL branch unit functionality, providing reference computation for equality, signed, and unsigned comparisons used in branch instructions.
+The `branch_unit` module implements the branch evaluation logic for the LX32 golden model, supporting LX32 base ISA branch conditions. It mirrors RTL branch unit functionality, providing reference computation for equality, signed, and unsigned comparisons used in branch instructions.
 
 ---
 

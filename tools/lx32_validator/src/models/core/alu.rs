@@ -1,7 +1,7 @@
 // ============================================================
 // LX32 Arithmetic Logic Unit
 // ============================================================
-// Supports RV32I base ALU operations.
+// Supports LX32 base base ALU operations.
 //
 // Design Goals:
 //   - WIDTH parametrizable
