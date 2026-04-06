@@ -98,26 +98,26 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 validate: ## Run standard fuzzer
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator
 
 validate-verbose: ## Run fuzzer with detailed output
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --verbose
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --verbose
 
 validate-long: ## Run only long-form program tests
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --long-only
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --long-only
 
 validate-long-verbose: ## Run long tests with details
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --long-only --verbose
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --long-only --verbose
 
 validate-seed: ## Run deterministic tests with required seed (usage: make validate-seed SEED=123)
 	@if [ -z "$(SEED)" ]; then echo "ERROR: validate-seed requires SEED=<n>"; exit 2; fi
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --seed $(SEED)
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --seed $(SEED)
 
 validate-long-custom: ## Custom long test (usage: make validate-long-custom NUM=10 LEN=1000)
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --long-only --num-programs $(NUM) --program-length $(LEN) $(if $(SEED),--seed $(SEED)) $(if $(VERBOSE),--verbose)
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --long-only --num-programs $(NUM) --program-length $(LEN) $(if $(SEED),--seed $(SEED)) $(if $(VERBOSE),--verbose)
 
 validate-help: ## Show validator CLI options
-	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml -- --help
+	cargo run --release --manifest-path $(VALIDATOR_DIR)/Cargo.toml --bin lx32_validator -- --help
 
 coq-local: ## Build local Coq specs (if present in this repo)
 	@$(MAKE) --no-print-directory coq-clean
@@ -284,5 +284,7 @@ run-binary: librust ## Run a custom LX32 binary on the RTL simulation (usage: ma
 	@if [ ! -f "$(BIN)" ]; then echo "ERROR: File $(BIN) not found"; exit 2; fi
 	@echo "→ Running $(BIN) on LX32 RTL Simulation..."
 	@cd $(VALIDATOR_DIR) && cargo run --release --bin run_program -- --binary $(abspath $(BIN))
+
+
 
 
