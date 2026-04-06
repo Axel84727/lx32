@@ -17,7 +17,7 @@
 
 #include "LX32MCTargetDesc.h"
 #include "LX32MCAsmInfo.h"
-#include "../target/TargetInfo/LX32TargetInfo.h"
+#include "../TargetInfo/LX32TargetInfo.h"
 
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCDwarf.h" // for MCCFIInstruction
@@ -122,8 +122,10 @@ public:
     // Until we hook up the TableGen-generated AsmWriter (which provides proper
     // ABI names like "sp", "ra", "a0", ...), we provide a tiny but safe
     // fallback that prints registers as "x<N>".
+    // TableGen allocates registers starting from ID 1, so we subtract 1.
     static thread_local char Buf[16];
     unsigned R = static_cast<unsigned>(Reg.id());
+    if (R > 0) R -= 1;
     (void)snprintf(Buf, sizeof(Buf), "x%u", R);
     return Buf;
   }
@@ -176,11 +178,11 @@ static MCSubtargetInfo *createLX32MCSubtargetInfo(const Triple &TT,
                                                    StringRef CPU,
                                                    StringRef FS) {
   // Use the TableGen-generated factory. This ensures the processor table
-  // (LX32SubTypeKV) is populated and "generic-lx32" is recognised.
+  // (LX32SubTypeKV) is populated and "generic" is recognised.
   // The previous manual construction with empty arrays was the root cause of:
   //   'generic' is not a recognized processor for this target (ignoring processor)
   if (CPU.empty())
-    CPU = "generic-lx32";
+    CPU = "generic";
   return createLX32MCSubtargetInfoImpl(TT, CPU, /*TuneCPU=*/CPU, FS);
 }
 
@@ -207,8 +209,8 @@ LLVMInitializeLX32TargetMC() {
   TargetRegistry::RegisterMCInstrInfo(T,      createLX32MCInstrInfo);
   TargetRegistry::RegisterMCRegInfo(T,        createLX32MCRegisterInfo);
   TargetRegistry::RegisterMCSubtargetInfo(T,  createLX32MCSubtargetInfo);
-
-  // This is the registration that was missing — without it createAsmStreamer()
-  // passes nullptr as the InstPrinter and asserts at MCAsmStreamer.cpp:97.
   TargetRegistry::RegisterMCInstPrinter(T,    createLX32MCInstPrinter);
+
+  TargetRegistry::RegisterMCCodeEmitter(T,    createLX32MCCodeEmitter);
+  TargetRegistry::RegisterMCAsmBackend(T,     createLX32AsmBackend);
 }

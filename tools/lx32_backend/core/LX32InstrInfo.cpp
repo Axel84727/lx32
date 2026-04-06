@@ -66,7 +66,7 @@ LX32InstrInfo::LX32InstrInfo(const LX32Subtarget &STI)
 //   ADD rd, rs, x0
 //
 // where x0 is the zero register (always 0), so the result is simply the
-// value of rs.  This is the standard idiom for register copies on RV32I-
+// value of rs.  This is the standard idiom for register copies on LX32 base-
 // derived ISAs.
 //
 // The RegisterAllocator emits copyPhysReg whenever it needs to move a value

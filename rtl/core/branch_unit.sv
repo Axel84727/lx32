@@ -11,7 +11,7 @@ module branch_unit #(
   // ============================================================
   // LX32 Branch Evaluation Unit
   // ============================================================
-  // Evaluates branch conditions for RV32I base ISA.
+  // Evaluates branch conditions for LX32 base ISA.
   //
   // Design Principles:
   //   - WIDTH parametrizable

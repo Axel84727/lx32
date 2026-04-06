@@ -10,7 +10,7 @@ The `control_unit` module implements the instruction decode logic for the LX32 g
 
 - Type-safe opcode usage via Rust enums.
 - No implicit latches: explicit default assignments and cases.
-- Full RV32I ALU coverage.
+- Full LX32 base ALU coverage.
 - Modular, maintainable structure.
 
 ---
@@ -41,7 +41,7 @@ The `control_unit` module implements the instruction decode logic for the LX32 g
 
 - Decodes instruction fields to generate control signals for ALU, branch, memory, and register operations.
 - Two-level decode: main instruction class and ALU operation refinement.
-- Handles all RV32I instruction types.
+- Handles all LX32 base instruction types.
 - Provides robust default handling for invalid or unsupported instructions.
 
 ---

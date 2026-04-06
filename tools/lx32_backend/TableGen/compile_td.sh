@@ -29,5 +29,8 @@ fi
 "$TBLGEN" -gen-register-info LX32.td -I "$INCLUDE" -I . -o LX32GenRegisterInfo.inc
 "$TBLGEN" -gen-instr-info LX32.td -I "$INCLUDE" -I . -o LX32GenInstrInfo.inc
 "$TBLGEN" --gen-subtarget LX32.td -I "$INCLUDE" -I . -o LX32GenSubtargetInfo.inc
+"$TBLGEN" -gen-emitter LX32.td -I "$INCLUDE" -I . -o LX32GenMCCodeEmitter.inc
+"$TBLGEN" -gen-asm-matcher LX32.td -I "$INCLUDE" -I . -o LX32GenAsmMatcher.inc
+"$TBLGEN" -gen-asm-writer LX32.td -I "$INCLUDE" -I . -o LX32GenAsmWriter.inc
 
 echo "TableGen: all .inc files generated successfully."

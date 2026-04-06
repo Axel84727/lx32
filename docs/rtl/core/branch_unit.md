@@ -2,7 +2,7 @@
 
 ## Overview
 
-Evaluates branch conditions for the LX32 processor, supporting all RV32I branch types. Implements execute stage branch logic. Connects to control unit and ALU.
+Evaluates branch conditions for the LX32 processor, supporting all LX32 base branch types. Implements execute stage branch logic. Connects to control unit and ALU.
 
 ---
 

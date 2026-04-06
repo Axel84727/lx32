@@ -23,7 +23,9 @@
 #   Target       — TargetMachine base class, TargetOptions
 
 add_llvm_component_library(LLVMLX32CodeGen
+  LX32AsmPrinter.cpp
   LX32FrameLowering.cpp
+  LX32ISelDAGToDAG.cpp
   LX32InstrInfo.cpp
   LX32ISelLowering.cpp
   LX32RegisterInfo.cpp

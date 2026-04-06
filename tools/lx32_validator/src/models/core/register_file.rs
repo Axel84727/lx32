@@ -1,5 +1,5 @@
 // ============================================================
-// LX32 Register File (RV32I)
+// LX32 Register File (LX32 base)
 // ============================================================
 // - 32 registers (x0–x31), 32-bit wide.
 // - x0 is hardwired to zero (read-only).

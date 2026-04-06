@@ -209,7 +209,7 @@ class LXInstS<bits<3> funct3, LX32Opcode opcode,
 //
 // imm13 represents bits [12:1] of the signed byte offset.
 // Bit 0 is always zero (instructions are 4-byte aligned) and is not encoded.
-// The bit scrambling here matches the LX32 / RISC-V B-type specification:
+// The bit scrambling here matches the LX32 B-type specification:
 //   Inst[31]    ← imm13[12]   (sign bit)
 //   Inst[30:25] ← imm13[10:5]
 //   Inst[11:8]  ← imm13[4:1]
@@ -270,7 +270,7 @@ class LXInstU<LX32Opcode opcode,
 //
 // imm21 represents bits [20:1] of the signed byte offset.
 // Bit 0 is always zero and is not encoded.
-// The bit scrambling matches the LX32 / RISC-V J-type specification:
+// The bit scrambling matches the LX32 J-type specification:
 //   Inst[31]    ← imm21[20]   (sign bit)
 //   Inst[30:21] ← imm21[10:1]
 //   Inst[20]    ← imm21[11]

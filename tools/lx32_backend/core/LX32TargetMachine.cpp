@@ -18,8 +18,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "LX32TargetMachine.h"
+#include "LX32ISelDAGToDAG.h"
 
-#include "../target/TargetInfo/LX32TargetInfo.h"
+#include "../TargetInfo/LX32TargetInfo.h"
 
 #include "llvm/CodeGen/Passes.h"
 #include "llvm/CodeGen/TargetLoweringObjectFileImpl.h"
@@ -31,6 +32,7 @@ using namespace llvm;
 
 // Forward declaration — see Section 3.
 extern "C" LLVM_ABI LLVM_EXTERNAL_VISIBILITY void LLVMInitializeLX32TargetMC();
+extern "C" LLVM_ABI LLVM_EXTERNAL_VISIBILITY void LLVMInitializeLX32AsmPrinter();
 
 //===----------------------------------------------------------------------===//
 // Section 0 — Data layout and relocation policy
@@ -114,16 +116,10 @@ public:
     return getTM<LX32TargetMachine>();
   }
 
-  // addInstSelector — register the instruction selector pass.
-  //
-  // Returns false when no custom pass is installed.  Once LX32ISelDAGToDAG
-  // is implemented (Day 10), this becomes:
-  //   addPass(createLX32ISelDag(getLX32TargetMachine(), getOptLevel()));
-  //   return false;
+  // addInstSelector — register the LX32 DAG selector.
   bool addInstSelector() override {
-    // No selector yet: tell LLVM codegen to stop with a diagnostic instead of
-    // continuing into passes that assume selected MachineInstrs exist.
-    return true;
+    addPass(createLX32ISelDag(getLX32TargetMachine(), getOptLevel()));
+    return false;
   }
 };
 
@@ -182,7 +178,7 @@ LX32TargetMachine::getSubtargetImpl(const Function &F) const {
   // constructor also normalises, but doing it here avoids constructing a
   // "generic" subtarget and then immediately discarding it from the cache.
   if (CPU.empty())
-    CPU = "generic-lx32";
+    CPU = "generic";
 
   std::string Key = CPU + FS;
   auto &Entry = SubtargetMap[Key];
@@ -222,6 +218,7 @@ LLVMInitializeLX32Target() {
   // construction.  initAsmInfo() (called from our constructor) will assert
   // if MCAsmInfo is not yet registered.
   LLVMInitializeLX32TargetMC();
+  LLVMInitializeLX32AsmPrinter();
 
   // Register LX32TargetMachine as the handler for the "lx32" architecture.
   // After this call, `llc -march=lx32` constructs an LX32TargetMachine.

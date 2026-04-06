@@ -11,7 +11,7 @@ Decodes instructions and generates control signals for LX32 processor pipeline. 
 - Canonical RTL implementation for instruction decode and control signal generation.
 - Type-safe opcode usage and signal encoding.
 - No implicit latches: default assignments and default cases.
-- Full RV32I coverage for ALU and branch operations.
+- Full LX32 base coverage for ALU and branch operations.
 - Robust, synthesis-friendly design with formal-verification readiness.
 
 ---

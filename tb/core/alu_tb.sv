@@ -10,7 +10,7 @@ module alu_tb;
   // - Deterministic stimulus
   // - Structured checks
   // - Assertion-based validation
-  // - Scalable for RV32I base instructions
+  // - Scalable for LX32 base base instructions
   // ============================================================
 
   localparam int WIDTH = 32;

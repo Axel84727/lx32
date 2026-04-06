@@ -229,7 +229,7 @@ def SRAI : LXInstI<0b101, OPC_IMM,
 //
 // All loads use the I-type encoding: rd = MEM[rs1 + simm12].
 // The assembly syntax is "rd, offset(base)" rather than "rd, rs1, imm"
-// to match conventional RISC-V / assembler notation.
+// to match conventional assembler notation.
 //
 // Pattern fragments (lx32_lh, lx32_lhu, lx32_lb, lx32_lbu) are defined in
 // Section 0 and wrap the LLVM sign/zero-extending load nodes so that each
@@ -300,6 +300,11 @@ def SH : Store_Pat<0b001, "sh",
 def SB : Store_Pat<0b000, "sb",
     [(truncstorei8 GPR:$rs2, (add GPR:$rs1, imm12:$imm12))]>;
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 1
+
+// Additional addressing patterns for pointer-dereference IR where the address
+// node is already a plain base register and no explicit add-immediate appears.
+def : Pat<(load GPR:$rs1), (LW GPR:$rs1, 0)>;
+def : Pat<(store GPR:$rs2, GPR:$rs1), (SW GPR:$rs2, GPR:$rs1, 0)>;
 
 //===----------------------------------------------------------------------===//
 // Section 7 — Branch Instructions (B-type)
@@ -454,7 +459,9 @@ let isPseudo = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
     let isReturn    = 1;
     let isTerminator = 1;
     let isBarrier   = 1;
-    let Uses        = [X1];
+    // Keep return-value registers live across RA so return-copy chains are not
+    // deleted as dead defs before pseudo expansion.
+    let Uses        = [X1, X10, X11];
   }
 
   def PseudoCALL : LX32Pseudo<(outs), (ins GPRNOX0:$rs1), "call\t$rs1", []> {
