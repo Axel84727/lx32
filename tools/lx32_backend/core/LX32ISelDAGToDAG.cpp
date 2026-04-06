@@ -79,6 +79,21 @@ void LX32DAGToDAGISel::Select(SDNode *Node) {
   }
 
   switch (Node->getOpcode()) {
+  case ISD::BR: {
+    SDLoc DL(Node);
+
+    if (Node->getNumOperands() < 2)
+      report_fatal_error("lx32: malformed BR node");
+
+    // Get the target block operand (second operand, first is chain)
+    SDValue Target = Node->getOperand(1);
+
+    // Create a PseudoBR pseudo-instruction that will be expanded later
+    SDNode *Jump = CurDAG->getMachineNode(
+        LX32::PseudoBR, DL, MVT::Other, Target);
+    ReplaceNode(Node, Jump);
+    return;
+  }
   case LX32ISD::CALL: {
     SDLoc DL(Node);
 

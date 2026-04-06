@@ -464,6 +464,12 @@ let isPseudo = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
     let Uses        = [X1, X10, X11];
   }
 
+  def PseudoBR : LX32Pseudo<(outs), (ins simm21:$target), "br\t$target", []> {
+    let isTerminator = 1;
+    let isBranch     = 1;
+    let isBarrier    = 1;
+  }
+
   def PseudoCALL : LX32Pseudo<(outs), (ins GPRNOX0:$rs1), "call\t$rs1", []> {
     let isCall         = 1;
     let Defs           = [X1];
