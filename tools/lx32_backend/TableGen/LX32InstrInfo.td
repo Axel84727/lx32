@@ -470,9 +470,12 @@ let isPseudo = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
     let isBarrier    = 1;
   }
 
-  def PseudoCALL : LX32Pseudo<(outs), (ins GPRNOX0:$rs1), "call\t$rs1", []> {
+  def PseudoCALL : LX32Pseudo<(outs), (ins bare_symbol:$target), "call\t$target", []> {
     let isCall         = 1;
-    let Defs           = [X1];
+    // Model ABI caller-saved clobbers so RA spills/reloads across calls.
+    let Defs           = [X1, X5, X6, X7,
+                          X10, X11, X12, X13, X14, X15, X16, X17,
+                          X28, X29, X30, X31];
     let hasSideEffects = 1;
   }
 
@@ -505,6 +508,22 @@ let isPseudo = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
 //===----------------------------------------------------------------------===//
 
 let isPseudo = 1, isCodeGenOnly = 1, Namespace = "LX32" in {
+
+  class PseudoCondBr<string Name>
+      : LX32Pseudo<(outs), (ins GPR:$rs1, GPR:$rs2, simm13:$target), Name, []> {
+    let hasSideEffects = 0;
+    let mayLoad        = 0;
+    let mayStore       = 0;
+    let isTerminator = 1;
+    let isBranch     = 1;
+  }
+
+  def PseudoBEQ  : PseudoCondBr<"pbeq\t$rs1, $rs2, $target">;
+  def PseudoBNE  : PseudoCondBr<"pbne\t$rs1, $rs2, $target">;
+  def PseudoBLT  : PseudoCondBr<"pblt\t$rs1, $rs2, $target">;
+  def PseudoBGE  : PseudoCondBr<"pbge\t$rs1, $rs2, $target">;
+  def PseudoBLTU : PseudoCondBr<"pbltu\t$rs1, $rs2, $target">;
+  def PseudoBGEU : PseudoCondBr<"pbgeu\t$rs1, $rs2, $target">;
 
   def LX32_LOAD_STACK_GUARD : LX32Pseudo<(outs GPR:$dst), (ins),
                                           "load_stack_guard", []> {

@@ -188,6 +188,58 @@ bool LX32InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
   MachineBasicBlock &MBB = *MI.getParent();
   DebugLoc DL = MI.getDebugLoc();
 
+  auto isCondBranchOpc = [](unsigned Opc) {
+    switch (Opc) {
+    default:
+      return false;
+    case LX32::PseudoBEQ:
+    case LX32::PseudoBNE:
+    case LX32::PseudoBLT:
+    case LX32::PseudoBGE:
+    case LX32::PseudoBLTU:
+    case LX32::PseudoBGEU:
+    case LX32::BEQ:
+    case LX32::BNE:
+    case LX32::BLT:
+    case LX32::BGE:
+    case LX32::BLTU:
+    case LX32::BGEU:
+      return true;
+    }
+  };
+
+  auto getBranchTargetMBB = [](const MachineInstr &BrMI) -> MachineBasicBlock * {
+    for (const MachineOperand &MO : BrMI.operands())
+      if (MO.isMBB())
+        return MO.getMBB();
+    return nullptr;
+  };
+
+  auto expandCondBr = [&](unsigned RealOpc) {
+    SmallVector<MachineOperand, 4> RegOps;
+    const MachineOperand *TargetMBBOp = nullptr;
+    for (const MachineOperand &MO : MI.operands()) {
+      if (MO.isMBB() && !TargetMBBOp) {
+        TargetMBBOp = &MO;
+        continue;
+      }
+      if (!MO.isReg() || MO.getReg() == 0 || MO.isImplicit())
+        continue;
+      RegOps.push_back(MO);
+    }
+    if (RegOps.size() < 2)
+      report_fatal_error("lx32: malformed conditional-branch pseudo operands");
+    if (!TargetMBBOp)
+      report_fatal_error("lx32: conditional branch pseudo missing target MBB");
+
+    auto MIB = BuildMI(MBB, MI, DL, get(RealOpc));
+    MIB->addOperand(RegOps[RegOps.size() - 2]);
+    MIB->addOperand(RegOps[RegOps.size() - 1]);
+    MIB->addOperand(*TargetMBBOp);
+    MBB.erase(MI);
+    return true;
+  };
+
   switch (MI.getOpcode()) {
   default:
     return false; // Unknown pseudo — leave it for another pass.
@@ -210,13 +262,60 @@ bool LX32InstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
     // Expand to: JAL x0, target
     //   x0 (define, dead) — result register; we discard the PC+4 return address
     //   target            — the branch target (simm21 immediate)
-    const MachineOperand &TargetOp = MI.getOperand(0);
+    MachineBasicBlock *TargetMBB = getBranchTargetMBB(MI);
+
+    MachineBasicBlock *CondTarget = nullptr;
+    for (MachineInstr *Prev = MI.getPrevNode(); Prev; Prev = Prev->getPrevNode()) {
+      if (Prev->isDebugInstr())
+        continue;
+      if (isCondBranchOpc(Prev->getOpcode()))
+        CondTarget = getBranchTargetMBB(*Prev);
+      break;
+    }
+
+    if (CondTarget) {
+      MachineBasicBlock *OtherSucc = nullptr;
+      for (MachineBasicBlock *Succ : MBB.successors()) {
+        if (Succ == CondTarget)
+          continue;
+        if (!OtherSucc) {
+          OtherSucc = Succ;
+          continue;
+        }
+        if (OtherSucc != Succ)
+          report_fatal_error("lx32: ambiguous non-conditional successor for PseudoBR");
+      }
+      if (OtherSucc)
+        TargetMBB = OtherSucc;
+    }
+
+    if (!TargetMBB) {
+      if (MBB.succ_empty())
+        report_fatal_error("lx32: branch pseudo has no branch target");
+      if (MBB.succ_size() > 1)
+        report_fatal_error("lx32: branch pseudo target is ambiguous without explicit MBB operand");
+      TargetMBB = *MBB.succ_begin();
+    }
+
     BuildMI(MBB, MI, DL, get(LX32::JAL))
         .addReg(LX32::X0, RegState::Define | RegState::Dead)
-        ->addOperand(TargetOp);
+        .addMBB(TargetMBB);
     MBB.erase(MI);
     return true;
   }
+
+  case LX32::PseudoBEQ:
+    return expandCondBr(LX32::BEQ);
+  case LX32::PseudoBNE:
+    return expandCondBr(LX32::BNE);
+  case LX32::PseudoBLT:
+    return expandCondBr(LX32::BLT);
+  case LX32::PseudoBGE:
+    return expandCondBr(LX32::BGE);
+  case LX32::PseudoBLTU:
+    return expandCondBr(LX32::BLTU);
+  case LX32::PseudoBGEU:
+    return expandCondBr(LX32::BGEU);
 
   case LX32::PseudoNOP:
     // Expand to: ADDI x0, x0, 0
