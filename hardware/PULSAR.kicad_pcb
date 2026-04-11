@@ -154,7 +154,7 @@
 	(footprint "Package_TO_SOT_THT:TO-92_Inline"
 		(layer "F.Cu")
 		(uuid "04328cde-2ba6-4d52-b5ae-aabe5a715d69")
-		(at 153.78 96.38)
+		(at 149.5 38.5)
 		(descr "TO-92 leads in-line, narrow, oval pads, drill 0.75mm (see NXP sot054_po.pdf)")
 		(tags "to-92 sc-43 sc-43a sot54 PA33 transistor")
 		(property "Reference" "U2"
@@ -381,13 +381,13 @@
 	(footprint "Capacitor_SMD:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "1d3e05f0-7803-445e-8270-b3f4de29ec1b")
-		(at 154.02 100.42)
+		(at 136.3625 31)
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing)")
 		(tags "capacitor")
 		(property "Reference" "C1"
 			(at 0 -1.68 0)
 			(layer "F.SilkS")
-			(uuid "fa9dabdb-68cc-4d31-b950-a4b992b07b47")
+			(uuid "109e5cfb-b6bf-42a2-b8a4-e130b1389ec3")
 			(effects
 				(font
 					(size 1 1)
@@ -398,7 +398,7 @@
 		(property "Value" "1uF"
 			(at 0 1.68 0)
 			(layer "F.Fab")
-			(uuid "47408853-af6f-412d-b214-1d2b414a3b55")
+			(uuid "59b17f06-b7be-4b20-857c-7f5e223ea303")
 			(effects
 				(font
 					(size 1 1)
@@ -410,7 +410,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e477f133-2dc5-4fbb-8d2d-934ac5b3a20f")
+			(uuid "58268a42-6aa1-45bb-84de-540f61a6a9ed")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -421,7 +421,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e39941cf-6aa0-41f2-b7c0-090b6a984035")
+			(uuid "21019263-bf40-4f96-b3cc-bfb7f958ab03")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -539,7 +539,7 @@
 	(footprint "Package_SO:SOIC-24W_7.5x15.4mm_P1.27mm"
 		(layer "F.Cu")
 		(uuid "2f93a262-56a0-4534-83ed-38911035d7f5")
-		(at 153.66 84.655)
+		(at 140.5 43.5)
 		(descr "SOIC, 24 Pin (JEDEC MS-013AD, https://www.analog.com/media/en/package-pcb-resources/package/pkg_pdf/soic_wide-rw/RW_24.pdf)")
 		(tags "SOIC SO")
 		(property "Reference" "U3"
@@ -1083,13 +1083,13 @@
 	(footprint "Connector_USB:USB_C_Receptacle_GCT_USB4115-03-C"
 		(layer "F.Cu")
 		(uuid "4ab53fbe-d33c-4466-85b6-f8e959188e37")
-		(at 152.7 120.48)
+		(at 141.75 23.335)
 		(descr "USB TYPE C, VERT RCPT PCB, SMT, https://gct.co/files/drawings/usb4115.pdf")
 		(tags "USB C Type-C Receptacle SMD")
 		(property "Reference" "J3"
 			(at 0 -3.2 0)
 			(layer "F.SilkS")
-			(uuid "f0a8d7ef-fd7d-40ac-b957-afbed568ca86")
+			(uuid "5de2fe97-1228-4d77-bd92-cfb5a991eeb4")
 			(effects
 				(font
 					(size 1 1)
@@ -1100,7 +1100,7 @@
 		(property "Value" "USB_C_Receptacle"
 			(at 0 4 0)
 			(layer "F.Fab")
-			(uuid "7e059b9c-2c29-499f-ae66-7be6a0a38992")
+			(uuid "f1da797f-bbfc-4f57-979d-f33552ba372d")
 			(effects
 				(font
 					(size 1 1)
@@ -1113,7 +1113,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "f23cf261-40a9-46a6-880b-0f523e34a2c5")
+			(uuid "2564f084-30a2-4efc-b30f-9b58d9e42f52")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1126,7 +1126,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "1d0f97d7-ba34-4161-9d76-5a50f4a019b8")
+			(uuid "8437440f-8b81-4f44-8496-23a296f64b20")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1967,7 +1967,7 @@
 			)
 			(polygon
 				(pts
-					(xy 153.5 118.68) (xy 151.9 118.68) (xy 151.9 117.98) (xy 153.5 117.98)
+					(xy 142.55 21.535) (xy 140.95 21.535) (xy 140.95 20.835) (xy 142.55 20.835)
 				)
 			)
 		)
@@ -1998,7 +1998,7 @@
 			)
 			(polygon
 				(pts
-					(xy 153.5 122.98) (xy 151.9 122.98) (xy 151.9 122.28) (xy 153.5 122.28)
+					(xy 142.55 25.835) (xy 140.95 25.835) (xy 140.95 25.135) (xy 142.55 25.135)
 				)
 			)
 		)
@@ -2018,13 +2018,13 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23-5"
 		(layer "F.Cu")
 		(uuid "689da09a-31ee-45ec-b6f2-91bcf693d93c")
-		(at 149.78 126.605)
+		(at 141.5 31.5)
 		(descr "SOT, 5 Pin (JEDEC MO-178 Var AA https://www.jedec.org/document_search?search_api_views_fulltext=MO-178)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "U1"
 			(at 0 -2.4 0)
 			(layer "F.SilkS")
-			(uuid "8595920d-993e-4638-aa77-20ef7dac908e")
+			(uuid "e96e7d44-0652-4603-8584-365c903b646a")
 			(effects
 				(font
 					(size 1 1)
@@ -2035,7 +2035,7 @@
 		(property "Value" "AP2112K-3.3"
 			(at 0 2.4 0)
 			(layer "F.Fab")
-			(uuid "5830bb26-852a-45d3-91ac-20efd5ac637c")
+			(uuid "eab7f176-7487-48c7-a8b8-36a0df9176c5")
 			(effects
 				(font
 					(size 1 1)
@@ -2047,7 +2047,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "dd734dcb-e8c0-4c66-85ec-0bbe88328496")
+			(uuid "ed670089-1489-475d-ab28-bc47893725ab")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2058,7 +2058,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "2f6928ec-dc16-4953-ae12-c5f8f3b82535")
+			(uuid "feabd67d-9726-4981-98d0-dd64822f4198")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2420,7 +2420,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "7841cfb6-758f-4c94-af23-e249aeb9d355")
-		(at 149.5 95.42)
+		(at 158 44.5)
 		(descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x04 2.54mm single row")
 		(property "Reference" "J2"
@@ -2683,7 +2683,7 @@
 	(footprint "Package_SO:TSSOP-38_4.4x9.7mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "918121e3-663e-4f41-a826-6251b1a09a0d")
-		(at 151.58 111.135)
+		(at 151.5 46.5)
 		(descr "TSSOP, 38 Pin (JEDEC MO-153 Var BD https://www.jedec.org/document_search?search_api_views_fulltext=MO-153)")
 		(tags "TSSOP SO")
 		(property "Reference" "U4"
@@ -3368,7 +3368,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x20_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "9c6f462f-d07e-46e7-854b-9ebbcaf3a6db")
-		(at 144.91 78.38)
+		(at 132 21.5)
 		(descr "Through hole straight pin header, 1x20, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x20 2.54mm single row")
 		(property "Reference" "J1"
@@ -3809,13 +3809,13 @@
 	(footprint "Capacitor_SMD:C_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "cb5ce11f-3bbc-48d7-88de-3deecbd4ab73")
-		(at 154.02 103.43)
+		(at 146.55 31)
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing)")
 		(tags "capacitor")
 		(property "Reference" "C2"
 			(at 0 -1.68 0)
 			(layer "F.SilkS")
-			(uuid "cb782502-e231-4111-9024-f269a7adb438")
+			(uuid "a5f905b3-7388-47d5-9570-5d246b2be8f6")
 			(effects
 				(font
 					(size 1 1)
@@ -3826,7 +3826,7 @@
 		(property "Value" "1uF"
 			(at 0 1.68 0)
 			(layer "F.Fab")
-			(uuid "69dd6800-828b-48f7-a262-10d016362e79")
+			(uuid "cda2de2e-7df6-4aab-bb60-9867c343f06f")
 			(effects
 				(font
 					(size 1 1)
@@ -3838,7 +3838,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "7c09e21b-272b-47ac-96ae-858eead3d42a")
+			(uuid "848742cc-9c43-42e9-a675-babcea24f12a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3849,7 +3849,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "849f2e6e-7f61-4e50-a61a-4ef90dff58f6")
+			(uuid "58e27725-0cf5-470b-af3a-e5bf23a3ad16")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3963,6 +3963,17 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(gr_rect
+		(start 103.5 14)
+		(end 183.5 164)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "Edge.Cuts")
+		(uuid "eb5b20c2-3ffb-4c11-a468-1bef5487de41")
 	)
 	(embedded_fonts no)
 )
