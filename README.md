@@ -11,16 +11,18 @@ This repository contains a 32-bit single-cycle CPU core: a custom ISA implemente
 
 ## What this is
 
-lx32 is Phase 0 of a larger architecture called **lx-Ω** — a full-stack computing platform designed from first principles. The roadmap ahead:
+## Hardware Design & Assembly
+Since the **lx32** is a soft-core processor, I designed a custom mounting station to integrate the FPGA with its peripherals.
 
-- **lx32** — 32-bit single-cycle core ✅ complete
-- **LLVM backend** — compiler support for the lx32 ISA (in progress, check branch `feat/llvm-backend`)
-  - **Want to write C code for lx32?** Read the [Baremetal C Development Guide](README_C_DEV.md).
-- **lx-Ω OS** — a capability-based microkernel written in Rust
-- **lx-Ω hardware** — custom PCB and FPGA implementation
-- **lx-Ω laptop** — a complete laptop built from the ground up
+### 3D CAD Model
+I used a procedural approach to generate the hardware assembly using **FreeCAD's Python API**. This ensures the spatial constraints for the Tang Primer 20K and the OLED display are met.
 
-Every design decision is documented. Every module has a specification, a Rust reference model, and a test suite. Nothing is left implicit.
+![lx32 Hardware Block Model](tu_imagen.png)
+*Figure: Spatial assembly showing the Base Plate (Large), FPGA Module (Medium), and OLED Display (Small).*
+
+**Files:**
+* Source Script: [`/cad/generate_assembly.py`](./cad/generate_assembly.py)
+* CAD Export: [`/cad/lx32_assembly.step`](./cad/lx32_assembly.step)
 
 ---
 
