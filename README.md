@@ -151,6 +151,34 @@ Contributions that extend the ISA, add functional units, or improve verification
 
 ---
 
+## Hardware Documentation & Integration
+
+### 3D CAD Visualization
+I designed a custom mounting plate to integrate the FPGA and the OLED display. This model ensures proper spatial arrangement and physical stability.
+![CAD Assembly](BOM.png)
+*Figure 1: Procedural 3D model generated via FreeCAD Python API.*
+
+### Wiring & Pinout Diagram
+The following diagram illustrates the physical connections between the Sipeed Tang Primer 20K Dock, the SPI OLED display, and the logic analyzer for real-time instruction tracing.
+![Wiring Diagram](cable_diagram.png)
+*Figure 2: Complete hardware interconnect and pin mapping.*
+
+---
+
+## Bill of Materials (BOM)
+
+| Part | Purpose | Qty | Price (USD) | Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **Sipeed Tang Primer 20K** | Main FPGA SoC Board | 1 | $61.14 | [Tiendamia/Amazon](https://tiendamia.com) |
+| **USB Logic Analyzer** | Instruction Bus Debugging | 1 | $12.68 | [Tiendamia/Amazon](https://tiendamia.com) |
+| **0.96" OLED Display** | CPU Status/Registers Output | 1 | $14.22 | [Tiendamia/Amazon](https://tiendamia.com) |
+| **Breadboard & Jumpers** | Prototyping & Connections | 1 | $9.89 | [Tiendamia/Amazon](https://tiendamia.com) |
+| **International Shipping** | Logistics to Uruguay (Tiendamia) | 1 | $48.24 | - |
+| **Total Project Cost** | | | **$146.17** | |
+
+> **Note:** Shipping and logistics fees are included to ensure compliance with the Stasis bit-to-hardware ratio and Uruguayan import regulations.
+---
+
 ## License
 
 MIT
