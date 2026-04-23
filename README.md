@@ -22,7 +22,7 @@ I used a procedural approach to generate the hardware assembly using **FreeCAD's
 
 **Files:**
 * Source Script: [`/cad/generate_assembly.py`](./cad/generate_assembly.py)
-* CAD Export: [`/cad/lx32_assembly.step`](./cad/step_file.step)
+* CAD Export: [`cad/step_file.step`](./cad/step_file.step)
 
 ---
 
