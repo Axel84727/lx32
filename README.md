@@ -17,7 +17,7 @@ Since the **lx32** is a soft-core processor, I designed a custom mounting statio
 ### 3D CAD Model
 I used a procedural approach to generate the hardware assembly using **FreeCAD's Python API**. This ensures the spatial constraints for the Tang Primer 20K and the OLED display are met.
 
-![lx32 Hardware Block Model](tu_imagen.png)
+![lx32 Hardware Block Model](cad_img.png)
 *Figure: Spatial assembly showing the Base Plate (Large), FPGA Module (Medium), and OLED Display (Small).*
 
 **Files:**
