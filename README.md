@@ -1,84 +1,110 @@
 # lx32
-> **"Most computers are black boxes. I'm building a glass one."**
 
-Most people take their CPU for granted. I decided to build my own from the first transistor up to a full LLVM backend. No shortcuts, no black boxes, just pure logic and 1.1 billion tests to prove it works.
-
-**lx32** is the first phase of a long-term project to build a complete computer from scratch — processor, compiler, operating system, and hardware — with no compromises on correctness, documentation, or verification.
-
-This repository contains a 32-bit single-cycle CPU core: a custom ISA implemented in SystemVerilog, verified against a Rust golden model with over 1.1 billion random instructions executed without a single failure.
+Custom 32-bit soft-core processor, designed from scratch. ISA I defined myself, implemented in SystemVerilog, verified against a Rust reference model with 1.1B random instruction vectors. Built with two teammates. The goal is a full computer from the ground up — processor, compiler, OS, hardware — no premade shortcuts at any layer.
 
 ---
 
-## What this is
+## Why
 
-## Hardware Design & Assembly
-Since the **lx32** is a soft-core processor, I designed a custom mounting station to integrate the FPGA with its peripherals.
+I didn't want to use an existing board and trust something I didn't design. Every pinout decision, every power rail, every routing choice on the PCB is mine. Same with the ISA — I wanted to be able to look at any instruction and explain exactly why it encodes the way it does and what the hardware does with it. The Rust golden model exists because I needed a way to prove the RTL was right, not just believe it.
 
-### 3D CAD Model
-I used a procedural approach to generate the hardware assembly using **FreeCAD's Python API**. This ensures the spatial constraints for the Tang Primer 20K and the OLED display are met.
+The LLVM backend is being built in parallel by me and two collaborators. We're targeting lx32 as an experimental backend — defining the triple, register file, instruction patterns, calling convention, ABI, and code emission through TableGen and C++. It can already lower a subset of C to lx32 assembly and run it end-to-end against the model.
 
-![lx32 Hardware Block Model](cad_img.png)
-*Figure: Spatial assembly showing the Base Plate (Large), FPGA Module (Medium), and OLED Display (Small).*
+---
 
-**Files:**
-* Source Script: [`/cad/generate_assembly.py`](./cad/generate_assembly.py)
-* CAD Export: [`cad/step_file.step`](./cad/step_file.step)
+## Hardware — Custom FPGA Carrier Board
+
+I designed a carrier PCB from scratch around the **Lattice iCE40HX4K-TQ144**. The iCE40HX4K has 3.5K LUTs, which gives me enough headroom for the lx32 single-cycle core plus debug logic. I chose Lattice specifically because of the open-source toolchain — Yosys + nextpnr + icepack, no proprietary synthesis flows.
+
+The board is 80×60mm, 2-layer FR4, ENIG finish, black soldermask. There's personal gold art on both copper layers.
+
+![lx32 PCB](cad_img.png)
+
+KiCad source: [`pcb/`](./pcb/) — schematic, layout, design rules, all in there.
+Production gerbers: [`gerbers.zip`](./gerbers.zip) — 2-layer, 10 gerber files + drill.
+3D model: [`cad/lx32-fpga.step`](./cad/lx32-fpga.step)
+
+### What's on the board
+
+- **iCE40HX4K-TQ144** — FPGA, 144-pin TQFP, center of board
+- **CH340C** — USB-UART bridge for programming, SOP-16. Using this instead of FTDI to avoid driver licensing issues on Linux
+- **W25Q32JV** — 32 Mbit SPI flash for cold-boot bitstream storage
+- **AP2112K-3.3** — 3.3V LDO for FPGA VCCIO banks
+- **AP2112K-1.2** — 1.2V LDO for iCE40 core VCC. The iCE40HX needs a completely separate 1.2V supply for the core — running 3.3V to VCC_CORE would destroy it
+- **5.1kΩ on CC1 and CC2** — required for USB-C chargers to negotiate power. Without these resistors, modern USB-C supplies won't deliver anything
+- **25MHz crystal** with GND guard ring on F.Cu, via-stitched at all four corners
+- 100nF 0402 decoupling cap on every VCC/VCCIO pin per Lattice's app note, 10µF bulk caps at LDO outputs
+- 4× M3 PTH mounting holes at corners, GND-connected
+- 3 asymmetric SMD fiducials for pick-and-place alignment
+- 7 test points along the top edge: VCC_3V3, VCC_1V2, GND, VBUS, USB_DP, USB_DM, CLK25
+- Power LED and CDONE status LED with 100Ω current-limiting resistors
+- 96 GND stitching vias, perimeter fence + interior grid
 
 ---
 
 ## Architecture
 
-lx32 implements a custom 32-bit ISA structurally similar to LX32 base. The core is single-cycle, fully documented, and verified.
+Single-cycle, 32-bit, fixed-width instruction set. Correctness over performance — pipelined version is on the roadmap once the ISA is stable and the formal proofs are done.
 
 | Property | Value |
 |---|---|
-| Datapath width | 32 bits |
-| Register file | 32 × 32-bit general-purpose registers (x0 hardwired to zero) |
-| Instruction width | Fixed 32 bits |
-| Instruction formats | R, I, S, B, U, J |
+| Datapath | 32-bit |
+| Register file | 32 × 32-bit, x0 hardwired zero |
+| Instruction width | Fixed 32-bit |
+| Formats | R, I, S, B, U, J |
 | Endianness | Little-endian |
 | Pipeline | Single-cycle |
 
-**Implemented instruction classes:**
+Instruction classes:
 
-| Class | Opcodes | Description |
-|---|---|---|
-| R-type ALU | OP_OP | Register-register: ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU |
-| I-type ALU | OP_OP_IMM | Immediate: ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SLLI, SRLI, SRAI |
-| Load | OP_LOAD | Memory read |
-| Store | OP_STORE | Memory write |
-| Branch | OP_BRANCH | BEQ, BNE, BLT, BGE, BLTU, BGEU |
-| Jump | OP_JAL, OP_JALR | Unconditional jump with link |
-| Upper immediate | OP_LUI, OP_AUIPC | Load upper immediate, Add upper immediate to PC |
+| Class | Instructions |
+|---|---|
+| R-type ALU | ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU |
+| I-type ALU | ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SLLI, SRLI, SRAI |
+| Load | LB, LH, LW, LBU, LHU |
+| Store | SB, SH, SW |
+| Branch | BEQ, BNE, BLT, BGE, BLTU, BGEU |
+| Jump | JAL, JALR |
+| Upper immediate | LUI, AUIPC |
+
+RTL source in [`rtl/`](./rtl/). Every module has a spec doc under [`docs/rtl/`](./docs/rtl/).
 
 ---
 
 ## Verification
 
-The LX32 architecture is verified through a dual-layer strategy.
+Three layers. The first two are mine, the third is shared with the team.
 
-**Layer 1 — SystemVerilog testbenches** (`tb/`): fast sanity checks per module, used during development to catch regressions immediately.
+**SV testbenches** (`tb/`): per-module tests, fast, good for catching regressions. Not sufficient on their own.
 
-**Layer 2 — Rust golden model + fuzzer** (`tools/lx32_validator/`): the definitive verification layer. A Rust model mirrors every hardware module. A fuzzer generates random instruction sequences and compares RTL output against the reference model on every cycle. A shrinker reduces any failing case to its minimal reproducible form.
+**Rust golden model + fuzzer** (`tools/lx32_validator/`): the actual verification. A Rust implementation mirrors every hardware module cycle-accurate. A fuzzer generates random instruction sequences and compares RTL output against the model on every cycle. When something fails, a shrinker reduces it to the minimal reproducing case. I ran this until I was confident nothing obvious was hiding. Full results:
 
-| Module | Random Vectors | Status |
+| Module | Vectors | Result |
 |---|---|---|
-| ALU | 100,000,000 | ✅ PASSED |
-| Branch Unit | 100,000,000 | ✅ PASSED |
-| Control Unit | 100,000,000 | ✅ PASSED |
-| Register File | 100,000,000 | ✅ PASSED |
-| Full System | 100,000,000 | ✅ PASSED |
-| **Total** | **1,100,000,000+** | **✅ ZERO FAILURES** |
+| ALU | 100,000,000 | passed |
+| Branch Unit | 100,000,000 | passed |
+| Control Unit | 100,000,000 | passed |
+| Register File | 100,000,000 | passed |
+| Full System | 100,000,000 | passed |
+| **Total** | **1,100,000,000+** | **zero failures** |
 
-1.1 billion instructions validated in under 75 seconds.
+Full suite runs in under 75 seconds.
 
-**Formal mathematics status:** the Coq proof suite is kernel-checked and the closure theorem (`T7_closure_claim_end_to_end`) is proved. This gives mathematical guarantees for LX32 under the explicit refinement hypothesis `rtl_refines_spec` (tracked by the formal + lockstep closure flow).
+**Formal verification** (`tools/lx32_formal/`): Coq proofs for selected properties. The closure theorem `T7_closure_claim_end_to_end` is proved, giving mathematical guarantees under the refinement hypothesis `rtl_refines_spec`. SVA bounded model checks via `sby`, equivalence checks via Yosys LEC.
 
-For full details on the verification infrastructure see [`docs/tools/validator_make_usage.md`](docs/tools/validator_make_usage.md).
+Reference: [`docs/tools/validator_make_usage.md`](docs/tools/validator_make_usage.md)
 
 ---
 
-## Quick start
+## LLVM Backend
+
+Separate repo, built with two collaborators. Targets lx32 as an experimental LLVM backend — target triple, register file, instruction patterns, calling convention, code emission through TableGen and C++.
+
+Current state: compiles and can lower a subset of C to lx32 assembly. Eight programs pass end-to-end: return, pointer store, call chain, branch/loop, compare/assign, pointer walk, iterative fibonacci, recursive fibonacci. CI runs on x86_64 natively — QEMU+Docker was not viable (45 minutes per build cycle).
+
+---
+
+## Quick Start
 
 ```bash
 git clone https://github.com/Axel84727/lx32.git
@@ -86,97 +112,62 @@ cd lx32
 make setup
 ```
 
-Requires: `verilator`, Rust toolchain (`cargo`), `coqc`, `sby`, `yosys`, `z3`, and `g++`.
+Requirements: `verilator`, Rust (`cargo`), `coqc`, `sby`, `yosys`, `z3`, `g++`.
 
-`make setup` handles everything: generates the Verilator bridge, compiles the validator, and runs the full test suite.
-
----
-
-## Validation commands
+`make setup` generates the Verilator bridge, compiles the validator, runs the full test suite.
 
 ```bash
-make validate                                        # Full test suite
-make validate-verbose                                # With detailed output
-make validate-long                                   # Long program tests only
-make validate-seed SEED=42                           # Reproducible run
-make validate-long-custom NUM=50 LEN=2000 SEED=123  # Custom configuration
-make validate-help                                   # All available options
-make coq-local                                       # Build local Coq specs in tools/lx32_formal
-make coq-clean                                       # Remove Coq build artifacts
-make coq-only                                        # Build Coq spec in parent workspace
-make coq-check                                       # Clean + rebuild Coq spec
-make formal-validate SEED=42                         # Coq check + deterministic validator run
-make formal-sva                                      # Run SVA bounded model checks
-make formal-lec                                      # Run Yosys equivalence checks
-make formal-all                                      # Run full formal hardware suite
-make closure-proof SEED=42                           # Full closure gate (Coq + formal + seeded validator)
-make formal-help                                     # Show formal target list
+make sim TB=lx32_system_tb       # full system simulation
+make sim TB=alu_tb               # ALU only
+
+make validate                    # full test suite
+make validate-long               # long program tests
+make validate-seed SEED=42       # reproducible run
+
+make formal-all                  # full formal suite
+make closure-proof SEED=42       # Coq + formal + seeded validator
 ```
 
-For simulation of individual testbenches:
+---
 
-```bash
-make sim TB=lx32_system_tb
-make sim TB=alu_tb
-```
+## Docs
 
-See [`docs/tools/validator_make_usage.md`](docs/tools/validator_make_usage.md) for the complete reference.
+[`docs/`](./docs/) mirrors the source tree.
 
-Formal traceability and workflow docs:
-
-- [`docs/tools/coq_workflow.md`](docs/tools/coq_workflow.md)
-- [`docs/tools/isa_formal_equations.md`](docs/tools/isa_formal_equations.md)
-
-Formal Coq sources live in [`tools/lx32_formal/`](tools/lx32_formal/).
+- [`docs/rtl/`](docs/rtl/) — hardware module specs
+- [`docs/golden_model/`](docs/golden_model/) — Rust reference model
+- [`docs/tools/`](docs/tools/) — tooling and workflow
+- [`docs/backend.md`](docs/backend.md) — LLVM backend
 
 ---
 
-## Documentation
+## BOM
 
-All documentation lives in [`docs/`](docs/). The structure mirrors the source tree:
+Full BOM with LCSC part numbers: [`lx32-bom.csv`](./lx32-bom.csv)
 
-- [`docs/rtl/`](docs/rtl/) — hardware module specifications
-- [`docs/golden_model/`](docs/golden_model/) — Rust reference model specifications
-- [`docs/tools/`](docs/tools/) — tooling and workflow guides
+| Part | Qty | Unit | Total |
+| :--- | :---: | ---: | ---: |
+| Custom LX32 PCB — JLCPCB, 2-layer, ENIG, black mask | 5 | $3.00 | $15.00 |
+| Lattice iCE40HX4K-TQ144 | 2 | $9.50 | $19.00 |
+| CH340C USB-UART (SOP-16) | 2 | $0.45 | $0.90 |
+| W25Q32JVSSIQ SPI Flash 32Mb | 2 | $0.55 | $1.10 |
+| AP2112K-3.3TRG1 LDO 3.3V | 2 | $0.30 | $0.60 |
+| AP2112K-1.2TRG1 LDO 1.2V | 2 | $0.30 | $0.60 |
+| 25MHz Crystal SMD 3225 | 2 | $0.35 | $0.70 |
+| USB-C connector SMD | 2 | $0.40 | $0.80 |
+| 100nF 0402 caps ×20 | 20 | $0.01 | $0.20 |
+| 10µF 0805 caps ×4 | 4 | $0.05 | $0.20 |
+| 5.1kΩ 0402 ×4 (CC resistors) | 4 | $0.01 | $0.04 |
+| 100Ω 0402 ×4 (LED limiting) | 4 | $0.01 | $0.04 |
+| LED 0805 ×2 | 2 | $0.05 | $0.10 |
+| 2.54mm pin headers 40-pos | 1 | $0.80 | $0.80 |
+| M3 nylon standoffs + screws | 12 | $0.08 | $1.00 |
+| 0.96" OLED display | 1 | $14.22 | $14.22 |
+| Jumper wires + breadboard | 1 | $9.89 | $9.89 |
+| Shipping JLCPCB → Uruguay | — | — | $22.00 |
+| Shipping Tiendamia | — | — | $38.00 |
+| **Total** | | | **$124.19** |
 
-Start with [`docs/README.md`](docs/README.md) for the full index and navigation guide.
-
----
-
-## Contributing
-
-lx32 has a contributor framework built in. Every module has a generic template in the `generic/` directories inside `docs/` that defines the expected structure for RTL, golden model, and tests.
-
-Contributions that extend the ISA, add functional units, or improve verification tooling are welcome. All contributions must maintain the isomorphic documentation standard — every hardware module has a corresponding Rust model and a corresponding specification document.
-
----
-
-## Hardware Documentation & Integration
-
-### 3D CAD Visualization
-I designed a custom mounting plate to integrate the FPGA and the OLED display. This model ensures proper spatial arrangement and physical stability.
-![CAD Assembly](BOM.png)
-*Figure 1: Procedural 3D model generated via FreeCAD Python API.*
-
-### Wiring & Pinout Diagram
-The following diagram illustrates the physical connections between the Sipeed Tang Primer 20K Dock, the SPI OLED display, and the logic analyzer for real-time instruction tracing.
-![Wiring Diagram](cable_diagram.png)
-*Figure 2: Complete hardware interconnect and pin mapping.*
-
----
-
-## Bill of Materials (BOM)
-
-| Part | Purpose | Qty | Price (USD) | Link |
-| :--- | :--- | :--- | :--- | :--- |
-| **Sipeed Tang Primer 20K** | Main FPGA SoC Board | 1 | $61.14 | [Tiendamia/Amazon](https://tiendamia.com) |
-| **USB Logic Analyzer** | Instruction Bus Debugging | 1 | $12.68 | [Tiendamia/Amazon](https://tiendamia.com) |
-| **0.96" OLED Display** | CPU Status/Registers Output | 1 | $14.22 | [Tiendamia/Amazon](https://tiendamia.com) |
-| **Breadboard & Jumpers** | Prototyping & Connections | 1 | $9.89 | [Tiendamia/Amazon](https://tiendamia.com) |
-| **International Shipping** | Logistics to Uruguay (Tiendamia) | 1 | $48.24 | - |
-| **Total Project Cost** | | | **$146.17** | |
-
-> **Note:** Shipping and logistics fees are included to ensure compliance with the Stasis bit-to-hardware ratio and Uruguayan import regulations.
 ---
 
 ## License
