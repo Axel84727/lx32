@@ -18,7 +18,7 @@ I designed a carrier PCB from scratch around the **Lattice iCE40HX4K-TQ144**. Th
 
 The board is 80×60mm, 2-layer FR4, ENIG finish, black soldermask. There's personal gold art on both copper layers.
 
-![lx32 PCB](cad_img.png)
+[`cad_img.png`](cad_img.png)
 
 KiCad source: [`pcb/`](./pcb/) — schematic, layout, design rules, all in there.
 Production gerbers: [`gerbers.zip`](./gerbers.zip) — 2-layer, 10 gerber files + drill.
