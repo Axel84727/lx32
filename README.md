@@ -1,85 +1,99 @@
 # lx32
 
-Custom 32-bit soft-core processor, designed from scratch. ISA I defined myself, implemented in SystemVerilog, verified against a Rust reference model with 1.1B random instruction vectors. The goal is a full computer from the ground up: processor, compiler, OS, hardware. No premade shortcuts at any layer.
+I built a computer from scratch. A computer — custom processor, custom chip board, custom compiler. 
 
 ---
+## First of all 
 
-## Why
+Let me flex the victory against the DRC :)
+![looser](DRC_looser.png)
+---
+## What even is this
 
-I didn't want to use an existing board and trust something I didn't design. Every pinout decision, every power rail, every routing choice on the PCB is mine. Same with the ISA. I wanted to be able to look at any instruction and explain exactly why it encodes the way it does and what the hardware does with it. The Rust golden model exists because I needed a way to prove the RTL was right, not just believe it.
+lx32 is a 32-bit CPU that I designed myself, running on an FPGA that sits on a PCB I also designed myself, compiled by an LLVM backend I also wrote myself.
 
-The LLVM backend lives in `tools/lx32_backend/`. It targets lx32 as an experimental LLVM backend, defining the triple, register file, instruction patterns, calling convention, and code emission through TableGen and C++. It can already lower a subset of C to lx32 assembly and run it end-to-end against the model.
+The processor has 32 registers, a fixed 32-bit instruction width, and a single-cycle pipeline. It can do arithmetic, memory loads/stores, branches, jumps — everything a real processor does. I made up the instruction set.
 
+The board is 80×60mm — a little smaller than a credit card. Black soldermask, gold finish (ENIG). It plugs in over USB-C and boots from a flash chip on the board.
+
+I took some pictures of the measures!
+
+Long:
+![pcb long](pcb_long.png)
+
+Width:
+![pcb width](pcb_width.png)
+
+Full(and diagonal):
+![Full picture pcb](pcb_full.png)
 ---
 
-## Hardware
+## The board
 
-I designed a carrier PCB from scratch around the **Lattice iCE40HX4K-TQ144**. The iCE40HX4K has 3.5K LUTs, which gives me enough headroom for the lx32 single-cycle core plus debug logic. I chose Lattice specifically because of the open-source toolchain: Yosys + nextpnr + icepack. No proprietary synthesis flows.
 
-The board is 80x60mm, 2-layer FR4, ENIG finish, black soldermask. There's personal gold art on both copper layers.
+The board centers on a **Lattice iCE40HX4K** FPGA. That's the chip that becomes the processor. I picked it because the entire toolchain is open source — Yosys synthesizes the design, nextpnr does place-and-route, icepack packs the bitstream. No vendor software. No license key. No black box.
 
-[`cad_img.png`](cad_img.png)
+Everything else on the board is support hardware:
 
-KiCad source (schematic, layout, design rules): [`pcb/`](./pcb/)
-Production gerbers (2-layer, 10 files + drill): [`gerbers.zip`](./gerbers.zip)
-3D model: [`cad/lx32-fpga.step`](./cad/lx32-fpga.step)
+- **USB-C** — power in and programming port
+- **SPI flash** (W25Q32JV, 32Mbit) — stores the processor bitstream so it loads automatically on power-up
+- **Two LDOs** — the iCE40 needs 3.3V for I/O and 1.2V for its core; these are completely separate rails
+- **CH340C** USB-UART bridge — lets me talk to the processor from my laptop
+- **23K256 SPI SRAM** — 32KB of external data memory for the processor to use
+- **VGA header** — the processor can drive a monitor through 68Ω series resistors to FPGA GPIO
+- **Crystal oscillator** (25 MHz) — the clock
+- Status LEDs, mounting holes, decoupling caps everywhere they're supposed to be
 
-### What's on the board
+And it looks like this!
+![first look](pcb_first_look.png)
 
-- **iCE40HX4K-TQ144**: FPGA, 144-pin TQFP, center of board
-- **CH340C**: USB-UART bridge for programming, SOP-16. Using this instead of FTDI to avoid driver licensing issues on Linux
-- **W25Q32JV**: 32 Mbit SPI flash for cold-boot bitstream storage
-- **AP2112K-3.3**: 3.3V LDO for FPGA VCCIO banks
-- **AP2112K-1.2**: 1.2V LDO for iCE40 core VCC. The iCE40HX needs a completely separate 1.2V supply for the core. Running 3.3V to VCC_CORE would destroy it
-- **5.1kΩ on CC1 and CC2**: required for USB-C chargers to negotiate power. Without these resistors, modern USB-C supplies won't deliver anything
-- **25MHz crystal** with GND guard ring on F.Cu, via-stitched at all four corners
-- 100nF 0402 decoupling cap on every VCC/VCCIO pin per Lattice's app note, 10µF bulk caps at LDO outputs
-- 4x M3 PTH mounting holes at corners, GND-connected
-- 3 asymmetric SMD fiducials for pick-and-place alignment
-- 7 test points along the top edge: VCC_3V3, VCC_1V2, GND, VBUS, USB_DP, USB_DM, CLK25
-- Power LED and CDONE status LED with 100Ω current-limiting resistors
-- 96 GND stitching vias, perimeter fence + interior grid
+I also leave a .STEP file on [`.step file`](./cad/lx32-fpga.step)
 
----
+But I'll let 2 pictures from the back and the front so you don't have to open it :)
 
-## Architecture
+Front:
+![front of pcb](pcb_front_3d.png)
 
-Single-cycle, 32-bit, fixed-width instruction set. Correctness over performance. Pipelined version is on the roadmap once the ISA is stable and the formal proofs are done.
+Back: 
+![back of pcb](pcb_back_3d.png)
 
-| Property | Value |
+### Board specs
+
+| thing | value |
 |---|---|
-| Datapath | 32-bit |
-| Register file | 32 x 32-bit, x0 hardwired zero |
-| Instruction width | Fixed 32-bit |
-| Formats | R, I, S, B, U, J |
-| Endianness | Little-endian |
-| Pipeline | Single-cycle |
-
-Instruction classes:
-
-| Class | Instructions |
-|---|---|
-| R-type ALU | ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU |
-| I-type ALU | ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SLLI, SRLI, SRAI |
-| Load | LB, LH, LW, LBU, LHU |
-| Store | SB, SH, SW |
-| Branch | BEQ, BNE, BLT, BGE, BLTU, BGEU |
-| Jump | JAL, JALR |
-| Upper immediate | LUI, AUIPC |
-
-RTL source in [`rtl/`](./rtl/). Every module has a spec doc under [`docs/rtl/`](./docs/rtl/).
+| dimensions | 80 × 60 mm |
+| layers | 4 (F.Cu + B.Cu + In1.Cu + In2.Cu) |
+| surface finish | ENIG (gold) |
+| soldermask | black |
+| min trace | 0.2 mm (USB diff pair) |
+| vias | 216 |
+| pads | 287 |
+| unrouted | 0 |
 
 ---
 
-## Verification
+## The processor
 
-Three layers, all mine.
+The lx32 CPU lives in `rtl/`. It's SystemVerilog.
 
-**SV testbenches** (`tb/`): per-module tests, fast, good for catching regressions. Not sufficient on their own.
+| thing | value |
+|---|---|
+| data width | 32-bit |
+| registers | 32 (x0 is always zero) |
+| instruction width | fixed 32-bit |
+| pipeline | single-cycle |
 
-**Rust golden model + fuzzer** (`tools/lx32_validator/`): the actual verification. A Rust implementation mirrors every hardware module cycle-accurate. A fuzzer generates random instruction sequences and compares RTL output against the model on every cycle. When something fails, a shrinker reduces it to the minimal reproducing case. I ran this until I was confident nothing obvious was hiding. Full results:
+Instructions: ADD, SUB, AND, OR, XOR, shifts, loads, stores, branches, jumps, LUI, AUIPC. I designed the encoding myself.
 
-| Module | Vectors | Result |
+Every module has a spec under `docs/rtl/`.
+
+---
+
+## How I know it works
+
+I wrote a Rust program that models the processor exactly. Then I wrote a fuzzer that generates random instruction sequences, runs them on the real hardware simulation (Verilator) and on my Rust model at the same time, and compares results cycle by cycle.
+
+| module | test vectors | result |
 |---|---|---|
 | ALU | 100,000,000 | passed |
 | Branch Unit | 100,000,000 | passed |
@@ -88,23 +102,29 @@ Three layers, all mine.
 | Full System | 100,000,000 | passed |
 | **Total** | **1,100,000,000+** | **zero failures** |
 
-Full suite runs in under 75 seconds.
-
-**Formal verification** (`tools/lx32_formal/`): Coq proofs for selected properties. The closure theorem `T7_closure_claim_end_to_end` is proved, giving mathematical guarantees under the refinement hypothesis `rtl_refines_spec`. SVA bounded model checks via `sby`, equivalence checks via Yosys LEC.
-
-Reference: [`docs/tools/validator_make_usage.md`](docs/tools/validator_make_usage.md)
+Full suite runs in under 75 seconds(I also used a script on python to torture my pc). There are also Coq proofs for selected properties and SVA bounded model checks through sby.
 
 ---
 
-## LLVM Backend
+## The compiler
 
-Lives in `tools/lx32_backend/`. Targets lx32 as an experimental LLVM backend: target triple, register file, instruction patterns, calling convention, code emission through TableGen and C++.
+I wrote an LLVM backend for lx32. It lives in `tools/lx32_backend/`. It tells LLVM how to emit lx32 instructions — the instruction patterns, the register file, the calling convention, everything.
 
-Current state: compiles and can lower a subset of C to lx32 assembly. Eight programs pass end-to-end: return, pointer store, call chain, branch/loop, compare/assign, pointer walk, iterative fibonacci, recursive fibonacci. CI runs on x86_64 natively. QEMU+Docker was not viable (45 minutes per build cycle).
+Eight programs compile and run end-to-end: return, pointer store, call chain, branch/loop, compare/assign, pointer walk, iterative fibonacci, recursive fibonacci.
+
+So you can write C, compile it with LLVM, and it runs on hardware I built.
 
 ---
 
-## Quick Start
+## The gold art
+
+ENIG finish means exposed copper comes out gold on black soldermask. I put personal art on both layers.
+
+Front: an infinity symbol, *"All we need is love"*, *pototo ralora arerita*, `Lizzie <3`, `22/03/09`, `67`(i didn't choose it).
+
+The board is functional and it's also (at least for me) a piece of art.
+
+## Quick start
 
 ```bash
 git clone https://github.com/Axel84727/lx32.git
@@ -112,64 +132,41 @@ cd lx32
 make setup
 ```
 
-Requirements: `verilator`, Rust (`cargo`), `coqc`, `sby`, `yosys`, `z3`, `g++`.
-
-`make setup` generates the Verilator bridge, compiles the validator, runs the full test suite.
+Needs: `verilator`, Rust (`cargo`), `coqc`, `sby`, `yosys`, `z3`, `g++`.
 
 ```bash
-make sim TB=lx32_system_tb       # full system simulation
-make sim TB=alu_tb               # ALU only
-
-make validate                    # full test suite
-make validate-long               # long program tests
-make validate-seed SEED=42       # reproducible run
-
-make formal-all                  # full formal suite
-make closure-proof SEED=42       # Coq + formal + seeded validator
+make sim TB=lx32_system_tb    # full system sim
+make validate                  # full test suite (1.1B vectors)
+make formal-all                # formal proofs
 ```
-
----
-
-## Docs
-
-[`docs/`](./docs/) mirrors the source tree.
-
-- [`docs/rtl/`](docs/rtl/): hardware module specs
-- [`docs/golden_model/`](docs/golden_model/): Rust reference model
-- [`docs/tools/`](docs/tools/): tooling and workflow
-- [`docs/backend.md`](docs/backend.md): LLVM backend
 
 ---
 
 ## BOM
 
-Full BOM with LCSC part numbers: [`lx32-bom.csv`](./lx32-bom.csv)
+Full BOM: [`lx32-bom.csv`](./lx32-bom.csv)
 
-| Part | Qty | Unit | Total |
-| :--- | :---: | ---: | ---: |
-| Custom LX32 PCB (JLCPCB, 2-layer, ENIG, black mask) | 5 | $3.00 | $15.00 |
-| Lattice iCE40HX4K-TQ144 | 2 | $9.50 | $19.00 |
-| CH340C USB-UART (SOP-16) | 2 | $0.45 | $0.90 |
-| W25Q32JVSSIQ SPI Flash 32Mb | 2 | $0.55 | $1.10 |
-| AP2112K-3.3TRG1 LDO 3.3V | 2 | $0.30 | $0.60 |
-| AP2112K-1.2TRG1 LDO 1.2V | 2 | $0.30 | $0.60 |
-| 25MHz Crystal SMD 3225 | 2 | $0.35 | $0.70 |
-| USB-C connector SMD | 2 | $0.40 | $0.80 |
-| 100nF 0402 caps x20 | 20 | $0.01 | $0.20 |
-| 10µF 0805 caps x4 | 4 | $0.05 | $0.20 |
-| 5.1kΩ 0402 x4 (CC resistors) | 4 | $0.01 | $0.04 |
-| 100Ω 0402 x4 (LED limiting) | 4 | $0.01 | $0.04 |
-| LED 0805 x2 | 2 | $0.05 | $0.10 |
-| 2.54mm pin headers 40-pos | 1 | $0.80 | $0.80 |
-| M3 nylon standoffs + screws | 12 | $0.08 | $1.00 |
-| 0.96" OLED display | 1 | $14.22 | $14.22 |
-| Jumper wires + breadboard | 1 | $9.89 | $9.89 |
-| Shipping JLCPCB to Uruguay | | | $22.00 |
-| Shipping Tiendamia | | | $38.00 |
-| **Total** | | | **$124.19** |
+| Part | Qty | Total |
+| :--- | :---: | ---: |
+| Custom LX32 PCB (JLCPCB, 4-layer, ENIG, black mask) | 5 | $15.00 |
+| Lattice iCE40HX4K-TQ144 | 2 | $19.00 |
+| CH340C USB-UART (SOP-16) | 2 | $0.90 |
+| W25Q32JVSSIQ SPI Flash 32Mb | 2 | $1.10 |
+| AP2112K-3.3TRG1 LDO 3.3V | 2 | $0.60 |
+| AP2112K-1.2TRG1 LDO 1.2V | 2 | $0.60 |
+| 25MHz Crystal SMD 3225 | 2 | $0.70 |
+| USB-C connector SMD | 2 | $0.80 |
+| Microchip 23K256 SPI SRAM (SOIC-8) | 2 | $1.20 |
+| VGA 2x5 header + 68Ω resistors | -- | $0.76 |
+| Passives (caps, resistors, LEDs) | -- | $0.62 |
+| 2.54mm pin headers | 1 | $0.80 |
+| M3 standoffs + screws | 12 | $1.00 |
+| 0.96" OLED display | 1 | $14.22 |
+| Jumper wires + breadboard | 1 | $9.89 |
+| Shipping JLCPCB to Uruguay | -- | $22.00 |
+| Shipping Tiendamia | -- | $38.00 |
+| **Total** | | **$126.15** |
 
 ---
-
-## License
 
 MIT
