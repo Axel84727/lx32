@@ -1,5 +1,5 @@
 Name,Purpose,Quantity,Unit Price (USD),Total (USD),Link,Distributor
-"Custom LX32 PCB (JLCPCB 2-layer 80x60mm — ENIG Black Mask)","Carrier board fabrication. 2-layer FR4, ENIG surface finish (required for gold artwork), black soldermask, white silkscreen. 5-board minimum run.",5,3.00,15.00,"https://jlcpcb.com","JLCPCB"
+"Custom LX32 PCB (JLCPCB 4-layer 80x60mm — ENIG Black Mask)","Carrier board fabrication. 2-layer FR4, ENIG surface finish (required for gold artwork), black soldermask, white silkscreen. 5-board minimum run.",5,3.00,15.00,"https://jlcpcb.com","JLCPCB"
 "Lattice iCE40HX4K-TQ144","Main FPGA for lx32 soft-core synthesis. 3.5K LUTs, 80KB block RAM, TQ144 QFP package. Open-source toolchain (Yosys/nextpnr) compatible.",2,9.50,19.00,"https://www.lcsc.com/product-detail/FPGAs_Lattice-iCE40HX4K-TQ144_C5349789.html","LCSC"
 "CH340C USB-UART (SOP-16)","USB-to-UART bridge for FPGA programming interface. Avoids FTDI licensing issues. Well-supported on Linux/macOS without drivers.",2,0.45,0.90,"https://www.lcsc.com/product-detail/USB-ICs_WCH-Jiangsu-Qin-Heng-CH340C_C84681.html","LCSC"
 "W25Q32JVSSIQ SPI Flash 32Mb (SOIC-8)","External SPI flash for iCE40 bitstream cold-boot storage.",2,0.55,1.10,"https://www.lcsc.com/product-detail/NOR-FLASH_Winbond-Elec-W25Q32JVSSIQ_C179171.html","LCSC"
@@ -12,6 +12,9 @@ Name,Purpose,Quantity,Unit Price (USD),Total (USD),Link,Distributor
 "5.1k Ohm Resistor 0402 (x4)","USB-C CC1/CC2 pull-down resistors. Required for USB-C charger detection.",4,0.01,0.04,"https://www.lcsc.com","LCSC"
 "100 Ohm Resistor 0402 (x4)","LED current limiting resistors.",4,0.01,0.04,"https://www.lcsc.com","LCSC"
 "LED 0805 (x2)","Power-on and CDONE (bitstream loaded) status indicators.",2,0.05,0.10,"https://www.lcsc.com","LCSC"
+"Microchip 23K256 SPI SRAM 256Kb (SOIC-8)","External SPI SRAM for lx32 data memory expansion. 256Kbit / 32KB, 20 MHz max, 1.8–3.6V. SPI/SDI/SQI modes. Pairs with FPGA SPI master.",2,0.60,1.20,"https://www.lcsc.com/product-detail/SRAM_Microchip-Tech-23K256-I-SN_C506713.html","LCSC"
+"VGA 2x5 Pin Header 2.54mm (THT)","VGA output connector for lx32 video output. 5 signal pins (R/G/B/HSYNC/VSYNC) + 5 GND. Routes to FPGA GPIO via 68Ω series resistors.",2,0.35,0.70,"https://www.lcsc.com","LCSC"
+"68 Ohm Resistor 0402 (x6)","VGA series resistors (R5/R6/R7) — one per colour channel. Limits current into monitor input impedance.",6,0.01,0.06,"https://www.lcsc.com","LCSC"
 "2.54mm Pin Headers (40-pos strip)","OLED peripheral header and debug I/O breakout on carrier board.",1,0.80,0.80,"https://www.lcsc.com","LCSC"
 "M3 Nylon Standoffs 10mm (x4)","Board mounting — pairs with M3 mounting holes at board corners.",4,0.15,0.60,"https://www.lcsc.com","LCSC"
 "M3 Screws + Nuts (x4 each)","Secure board to enclosure or test fixture via MH1-MH4.",8,0.05,0.40,"https://www.lcsc.com","LCSC"
@@ -19,4 +22,4 @@ Name,Purpose,Quantity,Unit Price (USD),Total (USD),Link,Distributor
 "Jumper Wires & Breadboard Kit","Peripheral prototyping and OLED bring-up.",1,9.89,9.89,"https://www.amazon.com/Prdiozyn-Breadborad001/dp/B0G7CSPV18","Amazon via Tiendamia"
 "Shipping — JLCPCB to Uruguay (Global Standard Direct)","International shipping for PCB and SMD components.",1,22.00,22.00,"-","JLCPCB"
 "Shipping — Tiendamia (OLED + jumpers to Uruguay)","Local logistics for Amazon items via Tiendamia forwarding.",1,38.00,38.00,"-","Tiendamia"
-"TOTAL",,,,124.19,,
+"TOTAL",,,,126.15,,

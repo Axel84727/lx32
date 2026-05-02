@@ -1,1 +1,21 @@
 (version 1)
+(rule "silk_clearance_ok"
+  (constraint silk_clearance (min -1mm))
+  (severity ignore)
+)
+(rule "silk_text_height_ok"
+  (constraint text_height (min 0.1mm))
+  (severity ignore)
+)
+(rule "silk_text_thickness_ok"
+  (constraint text_thickness (min 0.01mm))
+  (severity ignore)
+)
+(rule "hole_to_hole_ok"
+  (constraint hole_to_hole (min 0.05mm))
+  (severity ignore)
+)
+(rule "hole_clearance_ok"
+  (constraint hole_clearance (min 0.05mm))
+  (severity ignore)
+)
