@@ -158,14 +158,14 @@ Full BOM: [`lx32-bom.csv`](./lx32-bom.csv)
 | USB-C connector SMD | 2 | $0.80 |
 | Microchip 23K256 SPI SRAM (SOIC-8) | 2 | $1.20 |
 | VGA 2x5 header + 68Ω resistors | -- | $0.76 |
-| Passives (caps, resistors, LEDs) | -- | $0.62 |
+| Passives (caps, resistors, LEDs) | -- | $0.58 |
 | 2.54mm pin headers | 1 | $0.80 |
 | M3 standoffs + screws | 12 | $1.00 |
 | 0.96" OLED display | 1 | $14.22 |
 | Jumper wires + breadboard | 1 | $9.89 |
 | Shipping JLCPCB to Uruguay | -- | $22.00 |
 | Shipping Tiendamia | -- | $38.00 |
-| **Total** | | **$126.15** |
+| **Total** | | **$127.15** |
 
 ---
 
