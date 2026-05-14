@@ -28,6 +28,10 @@ Full(and diagonal):
 ![Full picture pcb](pcb_full.png)
 ---
 
+## The schematics of this Board
+
+![schematics](schematics.png)
+
 ## The board
 
 
