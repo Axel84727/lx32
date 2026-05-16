@@ -1,22 +1,40 @@
 # lx32
 
-I built a computer from scratch. A computer — custom processor, custom chip board, custom compiler. 
+I built a computer from scratch. Not "I connected a Raspberry Pi to stuff." A computer — I designed the processor, I designed the board, and I wrote the compiler. All of it.
 
 ---
-## First of all 
 
-Let me flex the victory against the DRC :)
+## ok first let me flex
+
 ![looser](DRC_looser.png)
+
+Zero violations. Zero unconnected items. I cried a little.
+
+(also this is the 5th time I rewrote this README. if it still looks AI-generated I give up)
+
 ---
-## What even is this
 
-lx32 is a 32-bit CPU that I designed myself, running on an FPGA that sits on a PCB I also designed myself, compiled by an LLVM backend I also wrote myself.
+## what is this actually
 
-The processor has 32 registers, a fixed 32-bit instruction width, and a single-cycle pipeline. It can do arithmetic, memory loads/stores, branches, jumps — everything a real processor does. I made up the instruction set.
+lx32 is a 32-bit CPU I designed from nothing — the instruction set, the encoding, the registers, all of it I made up. It runs on an FPGA that sits on a PCB I also designed from nothing. And it gets compiled by an LLVM backend I wrote myself, so you can write actual C code and have it run on hardware I built.
 
-The board is 80×60mm — a little smaller than a credit card. Black soldermask, gold finish (ENIG). It plugs in over USB-C and boots from a flash chip on the board.
+I started this because I wanted to actually understand how computers work, not just the theory. Not "here's a diagram." I wanted to build the whole thing and see it run. So I did.
 
-I took some pictures of the measures!
+The board is 80×60mm — tiny, about the size of a credit card. Black soldermask, gold finish. It came all the way from JLCPCB to Uruguay (yes, Uruguay), and when the package finally arrived I just stared at it for a bit. It looked exactly like I designed it, which still feels unreal.
+
+---
+
+## the board
+
+Here's what it looks like before everything clicked into place:
+
+![first look](pcb_first_look.png)
+
+The schematics:
+
+![schematics](schematics.png)
+
+And the measurements because I'm proud of how small it came out:
 
 Long:
 ![pcb long](pcb_long.png)
@@ -24,78 +42,32 @@ Long:
 Width:
 ![pcb width](pcb_width.png)
 
-Full(and diagonal):
+Full view:
 ![Full picture pcb](pcb_full.png)
----
 
-## The schematics of this Board
+The main chip is a Lattice iCE40HX4K FPGA — that's the chip that *becomes* the processor when you load the bitstream. I chose it because the whole toolchain is open source. Yosys, nextpnr, icepack. No vendor software, no license keys, nothing closed.
 
-![schematics](schematics.png)
+Everything else on the board exists to support it: USB-C for power and programming, a SPI flash chip so the processor loads automatically on power-up, two separate voltage regulators (the iCE40 needs 3.3V and 1.2V on completely different rails), a USB-UART bridge to talk to it from my laptop, 32KB of external SRAM for the processor to actually use, and a VGA header so it can drive a monitor. There's also a small OLED display that shows register values and what instruction is running — which is actually the coolest thing to watch.
 
-## The board
-
-
-The board centers on a **Lattice iCE40HX4K** FPGA. That's the chip that becomes the processor. I picked it because the entire toolchain is open source — Yosys synthesizes the design, nextpnr does place-and-route, icepack packs the bitstream. No vendor software. No license key. No black box.
-
-Everything else on the board is support hardware:
-
-- **USB-C** — power in and programming port
-- **SPI flash** (W25Q32JV, 32Mbit) — stores the processor bitstream so it loads automatically on power-up
-- **Two LDOs** — the iCE40 needs 3.3V for I/O and 1.2V for its core; these are completely separate rails
-- **CH340C** USB-UART bridge — lets me talk to the processor from my laptop
-- **23K256 SPI SRAM** — 32KB of external data memory for the processor to use
-- **VGA header** — the processor can drive a monitor through 68Ω series resistors to FPGA GPIO
-- **Crystal oscillator** (25 MHz) — the clock
-- Status LEDs, mounting holes, decoupling caps everywhere they're supposed to be
-
-And it looks like this!
-![first look](pcb_first_look.png)
-
-I also leave a .STEP file on [`.step file`](./cad/lx32-fpga.step)
-
-But I'll let 2 pictures from the back and the front so you don't have to open it :)
-
-Front:
+3D render, front:
 ![front of pcb](pcb_front_3d.png)
 
-Back: 
+3D render, back:
 ![back of pcb](pcb_back_3d.png)
 
-### Board specs
-
-| thing | value |
-|---|---|
-| dimensions | 80 × 60 mm |
-| layers | 4 (F.Cu + B.Cu + In1.Cu + In2.Cu) |
-| surface finish | ENIG (gold) |
-| soldermask | black |
-| min trace | 0.2 mm (USB diff pair) |
-| vias | 216 |
-| pads | 287 |
-| unrouted | 0 |
+I also have the `.STEP` file if you want to open it in CAD: [`lx32-fpga.step`](./cad/lx32-fpga.step)
 
 ---
 
-## The processor
+## the processor
 
-The lx32 CPU lives in `rtl/`. It's SystemVerilog.
-
-| thing | value |
-|---|---|
-| data width | 32-bit |
-| registers | 32 (x0 is always zero) |
-| instruction width | fixed 32-bit |
-| pipeline | single-cycle |
-
-Instructions: ADD, SUB, AND, OR, XOR, shifts, loads, stores, branches, jumps, LUI, AUIPC. I designed the encoding myself.
-
-Every module has a spec under `docs/rtl/`.
+32 registers. Fixed 32-bit instruction width. Single-cycle. I designed the instruction encoding myself — ADD, SUB, AND, OR, XOR, shifts, loads, stores, branches, jumps, LUI, AUIPC. x0 is always zero. Everything lives in `rtl/` and is SystemVerilog. Every module has a spec in `docs/rtl/`.
 
 ---
 
-## How I know it works
+## how I know it works
 
-I wrote a Rust program that models the processor exactly. Then I wrote a fuzzer that generates random instruction sequences, runs them on the real hardware simulation (Verilator) and on my Rust model at the same time, and compares results cycle by cycle.
+I wrote a Rust model that simulates the processor exactly. Then I wrote a fuzzer that generates random instruction sequences, runs them through Verilator (the real hardware simulation) and through my Rust model at the same time, and compares every result cycle by cycle.
 
 | module | test vectors | result |
 |---|---|---|
@@ -106,29 +78,29 @@ I wrote a Rust program that models the processor exactly. Then I wrote a fuzzer 
 | Full System | 100,000,000 | passed |
 | **Total** | **1,100,000,000+** | **zero failures** |
 
-Full suite runs in under 75 seconds(I also used a script on python to torture my pc). There are also Coq proofs for selected properties and SVA bounded model checks through sby.
+The full suite runs in under 75 seconds. I also tortured my laptop with a Python script to run it continuously. There are also Coq proofs for some properties and formal verification through sby.
 
 ---
 
-## The compiler
+## the compiler
 
-I wrote an LLVM backend for lx32. It lives in `tools/lx32_backend/`. It tells LLVM how to emit lx32 instructions — the instruction patterns, the register file, the calling convention, everything.
+I wrote an LLVM backend for lx32. It tells LLVM how to emit lx32 instructions — the instruction patterns, the register file, the calling convention. Eight programs compile and run end-to-end: return, pointer store, call chain, branch/loop, compare/assign, pointer walk, iterative fibonacci, recursive fibonacci.
 
-Eight programs compile and run end-to-end: return, pointer store, call chain, branch/loop, compare/assign, pointer walk, iterative fibonacci, recursive fibonacci.
-
-So you can write C, compile it with LLVM, and it runs on hardware I built.
+So yes, you can write C, compile it with LLVM, and have it run on silicon I designed.
 
 ---
 
-## The gold art
+## the gold art
 
-ENIG finish means exposed copper comes out gold on black soldermask. I put personal art on both layers.
+ENIG means the exposed copper comes out gold on black soldermask. I put stuff on both sides of the board that matters to me personally.
 
-Front: an infinity symbol, *"All we need is love"*, *pototo ralora arerita*, `Lizzie <3`, `22/03/09`, `67`(i didn't choose it).
+The back has an infinity symbol at the top. Below it: *pototo ralora arerita*, *"All we need is love"*, `Lizzie <3`, `22/03/09`, and `67` (that last one I didn't choose — it just ended up there).
 
-The board is functional and it's also (at least for me) a piece of art.
+It's a real working computer and it also has my whole heart on it. Both things can be true.
 
-## Quick start
+---
+
+## run it yourself
 
 ```bash
 git clone https://github.com/Axel84727/lx32.git
@@ -136,7 +108,7 @@ cd lx32
 make setup
 ```
 
-Needs: `verilator`, Rust (`cargo`), `coqc`, `sby`, `yosys`, `z3`, `g++`.
+You'll need: `verilator`, Rust (`cargo`), `coqc`, `sby`, `yosys`, `z3`, `g++`.
 
 ```bash
 make sim TB=lx32_system_tb    # full system sim
